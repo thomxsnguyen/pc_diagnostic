@@ -1,2 +1,32 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+
+# Unit test / coverage reports
+.coverage
+.pytest_cache/
+
+# Environments
+.venv/
+venv/
+.env
+
+# Type checking
+.mypy_cache/
+.ruff_cache/
+
+# OS files
+.DS_Store
+
+# Exercises & Sandboxes
+exercises_sandbox.py
+
+# Artifacts/Documentation
 phase0_technical_design.txt
 pc_diagnostic_project_plan.md.pdf
