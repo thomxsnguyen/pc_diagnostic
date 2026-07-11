@@ -164,13 +164,13 @@ class TerminalDashboard:
 
         if is_stale:
             title_text = Text(
-                f"⚠️ COLLECTOR OFFLINE - DATA STALE ({health.age_s:.1f}s ago) ⚠️",
+                f"[COLLECTOR OFFLINE - DATA STALE ({health.age_s:.1f}s ago)]",
                 style="blink bold white on red",
             )
             header_border_style = "bold red"
         else:
             title_text = Text(
-                "💻 PC DIAGNOSTIC LIVE TUI MONITOR 💻",
+                "PC DIAGNOSTIC LIVE TUI MONITOR",
                 style="bold white on blue",
             )
             header_border_style = "blue"
@@ -628,7 +628,7 @@ class TerminalDashboard:
 
         if not has_active_alerts:
             alert_content: Any = Text(
-                "\n✅ No Active Alerts (System Healthy)",
+                "\nNo Active Alerts (System Healthy)",
                 justify="center",
                 style="bold green",
             )
