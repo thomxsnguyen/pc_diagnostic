@@ -11,6 +11,7 @@ from rich.progress import BarColumn, Progress
 from rich.table import Table
 from rich.text import Text
 
+from pc_diagnostic.alerts.dispatcher import AlertDispatcher
 from pc_diagnostic.cache import RollingCache
 from pc_diagnostic.models import MetricReading
 
@@ -45,8 +46,11 @@ def get_bar_style(percent: float) -> str:
 
 
 class TerminalDashboard:
-    def __init__(self, cache: RollingCache) -> None:
+    def __init__(
+        self, cache: RollingCache, dispatcher: AlertDispatcher | None = None
+    ) -> None:
         self.cache = cache
+        self.dispatcher = dispatcher
         self.console = Console()
 
     def _get_metric_val(
@@ -99,8 +103,9 @@ class TerminalDashboard:
             Layout(name="io", ratio=3),
         )
         layout["right"].split_column(
-            Layout(name="processes", ratio=5),
+            Layout(name="processes", ratio=4),
             Layout(name="thermals", ratio=2),
+            Layout(name="alerts", ratio=2),
             Layout(name="specs", ratio=2),
         )
         return layout
@@ -596,7 +601,49 @@ class TerminalDashboard:
             )
         )
 
-        # 7. RENDER DIAGNOSTICS & SYSTEM METADATA
+        # 7. RENDER ACTIVE ALERTS PANEL
+        alert_table = Table(box=None, padding=(0, 1), show_header=False, expand=True)
+        alert_table.add_column(style="bold")
+        alert_table.add_column(justify="center")
+        alert_table.add_column(justify="right")
+        alert_table.add_column(justify="right")
+
+        has_active_alerts = False
+        if self.dispatcher and self.dispatcher.active_incidents:
+            alert_table.add_row(
+                Text("Alert ID", style="dim"),
+                Text("Status", style="dim"),
+                Text("Current", style="dim"),
+                Text("Limit", style="dim"),
+            )
+            for inc in self.dispatcher.active_incidents.values():
+                has_active_alerts = True
+                status_text = Text("FIRING", style="blink bold red")
+                alert_table.add_row(
+                    inc.rule.id,
+                    status_text,
+                    f"{inc.value:.1f}",
+                    f"{inc.rule.threshold:.1f}",
+                )
+
+        if not has_active_alerts:
+            alert_content: Any = Text(
+                "\n✅ No Active Alerts (System Healthy)",
+                justify="center",
+                style="bold green",
+            )
+        else:
+            alert_content = alert_table
+
+        layout["alerts"].update(
+            Panel(
+                alert_content,
+                title="[bold red]Active Alerts[/bold red]",
+                box=ROUNDED,
+            )
+        )
+
+        # 8. RENDER DIAGNOSTICS & SYSTEM METADATA
         specs_table = Table(box=None, padding=(0, 1), show_header=False, expand=True)
         specs_table.add_column()
         specs_table.add_column(justify="right")

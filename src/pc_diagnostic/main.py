@@ -103,7 +103,7 @@ def main() -> None:
                     logger.info("No snapshots collected yet.")
         else:
             # Interactive Terminal Dashboard mode
-            dashboard = TerminalDashboard(cache)
+            dashboard = TerminalDashboard(cache, collector.dispatcher)
             dashboard.run(refresh_rate=args.refresh_rate)
 
     except KeyboardInterrupt:
