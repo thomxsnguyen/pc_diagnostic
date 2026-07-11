@@ -26,7 +26,8 @@ class LhmProvider(Provider):
             "-NoProfile",
             "-Command",
             "Get-CimInstance -Namespace root\\LibreHardwareMonitor -ClassName Sensor | "
-            "Select-Object Name, SensorType, Value, Identifier | ConvertTo-Json -Compress",
+            "Select-Object Name, SensorType, Value, Identifier | "
+            "ConvertTo-Json -Compress",
         ]
         try:
             # Short timeout to avoid blocking collector thread

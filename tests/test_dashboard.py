@@ -32,6 +32,7 @@ def test_dashboard_render_empty() -> None:
     # Render with empty cache should execute without errors
     dashboard.render(layout)
     assert layout["header"].renderable is not None
+    assert layout["body"].renderable is not None
 
 
 def test_dashboard_render_populated() -> None:
@@ -142,6 +143,7 @@ def test_dashboard_render_populated() -> None:
     assert layout["memory"].renderable is not None
     assert layout["io"].renderable is not None
     assert layout["processes"].renderable is not None
+    assert layout["thermals"].renderable is not None
     assert layout["specs"].renderable is not None
 
 

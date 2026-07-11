@@ -577,6 +577,7 @@ class TerminalDashboard:
                 Text("⚡ CPU Core Voltage:"), Text("N/A", style="dim")
             )
 
+        thermal_content: Any
         if not has_any_sensors:
             thermal_content = Text(
                 "\nNo LibreHardwareMonitor sensors detected\n"
