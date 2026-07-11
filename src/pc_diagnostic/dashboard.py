@@ -333,7 +333,7 @@ class TerminalDashboard:
         storage_info = Table(box=None, padding=(0, 1), show_header=False, expand=True)
         storage_info.add_column()
         storage_info.add_column()
-        storage_info.add_row(Text("📁 Storage Usage", style="bold yellow"), "")
+        storage_info.add_row(Text("Storage Usage", style="bold yellow"), "")
 
         disk_used_metrics = metrics.get("disk.usage.used", [])
         if disk_used_metrics:
@@ -374,7 +374,7 @@ class TerminalDashboard:
         network_info = Table(box=None, padding=(0, 1), show_header=False, expand=True)
         network_info.add_column()
         network_info.add_column()
-        network_info.add_row(Text("📶 Network I/O", style="bold magenta"), "")
+        network_info.add_row(Text("Network I/O", style="bold magenta"), "")
 
         net_sent_metrics = metrics.get("network.io.bytes_sent", [])
         net_recv_metrics = metrics.get("network.io.bytes_recv", [])
@@ -459,7 +459,7 @@ class TerminalDashboard:
         cpu_table.add_column(justify="right")
         cpu_table.add_column(justify="right")
 
-        cpu_table.add_row(Text("🔥 Top CPU Processes", style="bold red"), "", "", "")
+        cpu_table.add_row(Text("Top CPU Processes", style="bold red"), "", "", "")
         cpu_table.add_row(
             Text("PID", style="dim"),
             Text("Name", style="dim"),
@@ -489,7 +489,7 @@ class TerminalDashboard:
         mem_table.add_column(justify="right")
 
         mem_table.add_row(
-            Text("💾 Top Memory Processes", style="bold orange3"), "", "", ""
+            Text("Top Memory Processes", style="bold orange3"), "", "", ""
         )
         mem_table.add_row(
             Text("PID", style="dim"),
@@ -544,11 +544,11 @@ class TerminalDashboard:
                 "red" if cpu_temp > 80.0 else ("yellow" if cpu_temp > 60.0 else "green")
             )
             thermal_table.add_row(
-                Text("🔥 CPU Temperature:"),
+                Text("CPU Temperature:"),
                 Text(f"{cpu_temp:.1f} °C", style=f"bold {t_color}"),
             )
         else:
-            thermal_table.add_row(Text("🔥 CPU Temperature:"), Text("N/A", style="dim"))
+            thermal_table.add_row(Text("CPU Temperature:"), Text("N/A", style="dim"))
 
         if gpu_temp != -1.0:
             has_any_sensors = True
@@ -556,31 +556,29 @@ class TerminalDashboard:
                 "red" if gpu_temp > 80.0 else ("yellow" if gpu_temp > 60.0 else "green")
             )
             thermal_table.add_row(
-                Text("🎨 GPU Temperature:"),
+                Text("GPU Temperature:"),
                 Text(f"{gpu_temp:.1f} °C", style=f"bold {gt_color}"),
             )
         else:
-            thermal_table.add_row(Text("🎨 GPU Temperature:"), Text("N/A", style="dim"))
+            thermal_table.add_row(Text("GPU Temperature:"), Text("N/A", style="dim"))
 
         if fan_speed != -1.0:
             has_any_sensors = True
             thermal_table.add_row(
-                Text("🌀 Fan Speed:"),
+                Text("Fan Speed:"),
                 Text(f"{fan_speed:.0f} RPM", style="bold cyan"),
             )
         else:
-            thermal_table.add_row(Text("🌀 Fan Speed:"), Text("N/A", style="dim"))
+            thermal_table.add_row(Text("Fan Speed:"), Text("N/A", style="dim"))
 
         if cpu_volt != -1.0:
             has_any_sensors = True
             thermal_table.add_row(
-                Text("⚡ CPU Core Voltage:"),
+                Text("CPU Core Voltage:"),
                 Text(f"{cpu_volt:.2f} V", style="bold yellow"),
             )
         else:
-            thermal_table.add_row(
-                Text("⚡ CPU Core Voltage:"), Text("N/A", style="dim")
-            )
+            thermal_table.add_row(Text("CPU Core Voltage:"), Text("N/A", style="dim"))
 
         thermal_content: Any
         if not has_any_sensors:
