@@ -1,5 +1,4 @@
 import logging
-from typing import Any, dict, list, tuple
 
 from pc_diagnostic.alerts.models import AlertRule, Incident, IncidentState
 from pc_diagnostic.models import Snapshot
@@ -15,7 +14,7 @@ class AlertEvaluator:
     def evaluate(
         self, snapshot: Snapshot, cache_age: float, timestamp: float
     ) -> list[tuple[Incident, IncidentState, IncidentState]]:
-        """Evaluate a snapshot and return list of transitions (incident, old_state, new_state)."""
+        """Evaluate snapshot and return transitions (incident, old, new)."""
         transitions: list[tuple[Incident, IncidentState, IncidentState]] = []
 
         # Map metric readings for fast lookup
@@ -48,15 +47,21 @@ class AlertEvaluator:
             # 2. State Machine Transitions
             if incident.state == IncidentState.NORMAL:
                 if is_triggered:
-                    incident.state = IncidentState.PENDING
-                    incident.first_triggered_at = timestamp
-                    # No transition event emitted for PENDING state entries
+                    if rule.duration_s == 0.0:
+                        incident.state = IncidentState.FIRING
+                        transitions.append(
+                            (incident, IncidentState.NORMAL, IncidentState.FIRING)
+                        )
+                    else:
+                        incident.state = IncidentState.PENDING
+                        incident.first_triggered_at = timestamp
 
             elif incident.state == IncidentState.PENDING:
                 if is_triggered:
-                    # Check if debounce duration has elapsed
                     triggered_duration = timestamp - (
-                        incident.first_triggered_at or timestamp
+                        incident.first_triggered_at
+                        if incident.first_triggered_at is not None
+                        else timestamp
                     )
                     if triggered_duration >= rule.duration_s:
                         incident.state = IncidentState.FIRING
@@ -85,7 +90,8 @@ class AlertEvaluator:
 
             if old_state != incident.state:
                 logger.debug(
-                    f"Alert {rule.id} transitioned: {old_state.value} -> {incident.state.value} (val={value})"
+                    f"Alert {rule.id} transitioned: "
+                    f"{old_state.value} -> {incident.state.value} (val={value})"
                 )
 
         return transitions

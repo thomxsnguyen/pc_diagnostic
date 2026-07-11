@@ -1,10 +1,8 @@
 import logging
-import os
 import subprocess
 import sys
 import time
 from threading import Lock
-from typing import dict
 
 from pc_diagnostic.alerts.models import Incident, IncidentState
 
@@ -55,7 +53,10 @@ class AlertDispatcher:
         """Trigger platform-native desktop notification popup."""
         rule = incident.rule
         title = "PC Diagnostic Alert"
-        msg = f"Alert {rule.id} threshold violated! Value: {incident.value:.1f} (limit: {rule.threshold:.1f})"
+        msg = (
+            f"Alert {rule.id} threshold violated! "
+            f"Value: {incident.value:.1f} (limit: {rule.threshold:.1f})"
+        )
 
         try:
             if sys.platform == "darwin":
@@ -69,7 +70,8 @@ class AlertDispatcher:
             elif sys.platform == "win32":
                 # PowerShell notification balloons call
                 ps_script = (
-                    f"[void][System.Reflection.Assembly]::LoadWithPartialName('System.Windows.Forms'); "
+                    "[void][System.Reflection.Assembly]::"
+                    "LoadWithPartialName('System.Windows.Forms'); "
                     f"$n = New-Object System.Windows.Forms.NotifyIcon; "
                     f"$n.Icon = [System.Drawing.SystemIcons]::Information; "
                     f"$n.BalloonTipTitle = '{title}'; "

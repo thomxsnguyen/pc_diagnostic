@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional
 
 
 class IncidentState(Enum):
@@ -26,8 +25,8 @@ class AlertRule:
 class Incident:
     rule: AlertRule
     state: IncidentState = IncidentState.NORMAL
-    first_triggered_at: Optional[float] = None
-    last_fired_at: Optional[float] = None
+    first_triggered_at: float | None = None
+    last_fired_at: float | None = None
     value: float = 0.0
 
 
