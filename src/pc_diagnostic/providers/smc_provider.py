@@ -3,6 +3,7 @@ import logging
 import os
 import subprocess
 import sys
+from typing import ClassVar
 
 from pc_diagnostic.models import MetricReading, MetricUnit
 from pc_diagnostic.providers.base import Provider
@@ -16,7 +17,7 @@ BINARY_PATH = os.path.join(CURRENT_DIR, "smc_helper")
 
 class SmcProvider(Provider):
     # Map raw sensor names to canonical metric keys
-    SENSOR_MAP = {
+    SENSOR_MAP: ClassVar[dict[str, str]] = {
         # CPU Die / Core temps (Intel & Apple Silicon PMU)
         "cpu die temperature": "system.temperature.cpu",
         "pmu tdie": "system.temperature.cpu",
