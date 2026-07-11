@@ -99,7 +99,9 @@ class TerminalDashboard:
             Layout(name="io", ratio=3),
         )
         layout["right"].split_column(
-            Layout(name="processes", ratio=6), Layout(name="specs", ratio=3)
+            Layout(name="processes", ratio=5),
+            Layout(name="thermals", ratio=2),
+            Layout(name="specs", ratio=2),
         )
         return layout
 
@@ -519,7 +521,81 @@ class TerminalDashboard:
             )
         )
 
-        # 6. RENDER DIAGNOSTICS & SYSTEM METADATA
+        # 6. RENDER THERMALS & FANS PANEL
+        cpu_temp = self._get_metric_val(metrics, "system.temperature.cpu", -1.0)
+        gpu_temp = self._get_metric_val(metrics, "system.temperature.gpu", -1.0)
+        fan_speed = self._get_metric_val(metrics, "system.fan.speed", -1.0)
+        cpu_volt = self._get_metric_val(metrics, "system.voltage.cpu", -1.0)
+
+        thermal_table = Table(box=None, padding=(0, 1), show_header=False, expand=True)
+        thermal_table.add_column()
+        thermal_table.add_column(justify="right")
+
+        has_any_sensors = False
+
+        if cpu_temp != -1.0:
+            has_any_sensors = True
+            t_color = (
+                "red" if cpu_temp > 80.0 else ("yellow" if cpu_temp > 60.0 else "green")
+            )
+            thermal_table.add_row(
+                Text("🔥 CPU Temperature:"),
+                Text(f"{cpu_temp:.1f} °C", style=f"bold {t_color}"),
+            )
+        else:
+            thermal_table.add_row(Text("🔥 CPU Temperature:"), Text("N/A", style="dim"))
+
+        if gpu_temp != -1.0:
+            has_any_sensors = True
+            gt_color = (
+                "red" if gpu_temp > 80.0 else ("yellow" if gpu_temp > 60.0 else "green")
+            )
+            thermal_table.add_row(
+                Text("🎨 GPU Temperature:"),
+                Text(f"{gpu_temp:.1f} °C", style=f"bold {gt_color}"),
+            )
+        else:
+            thermal_table.add_row(Text("🎨 GPU Temperature:"), Text("N/A", style="dim"))
+
+        if fan_speed != -1.0:
+            has_any_sensors = True
+            thermal_table.add_row(
+                Text("🌀 Fan Speed:"),
+                Text(f"{fan_speed:.0f} RPM", style="bold cyan"),
+            )
+        else:
+            thermal_table.add_row(Text("🌀 Fan Speed:"), Text("N/A", style="dim"))
+
+        if cpu_volt != -1.0:
+            has_any_sensors = True
+            thermal_table.add_row(
+                Text("⚡ CPU Core Voltage:"),
+                Text(f"{cpu_volt:.2f} V", style="bold yellow"),
+            )
+        else:
+            thermal_table.add_row(
+                Text("⚡ CPU Core Voltage:"), Text("N/A", style="dim")
+            )
+
+        if not has_any_sensors:
+            thermal_content = Text(
+                "\nNo LibreHardwareMonitor sensors detected\n"
+                "(Not running LHM or N/A on macOS)",
+                justify="center",
+                style="dim",
+            )
+        else:
+            thermal_content = thermal_table
+
+        layout["thermals"].update(
+            Panel(
+                thermal_content,
+                title="[bold yellow]Thermals & Fans[/bold yellow]",
+                box=ROUNDED,
+            )
+        )
+
+        # 7. RENDER DIAGNOSTICS & SYSTEM METADATA
         specs_table = Table(box=None, padding=(0, 1), show_header=False, expand=True)
         specs_table.add_column()
         specs_table.add_column(justify="right")
