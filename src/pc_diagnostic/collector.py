@@ -2,6 +2,9 @@ import logging
 import threading
 import time
 
+from pc_diagnostic.alerts.dispatcher import AlertDispatcher
+from pc_diagnostic.alerts.evaluator import AlertEvaluator
+from pc_diagnostic.alerts.models import DEFAULT_ALERT_RULES
 from pc_diagnostic.cache import RollingCache
 from pc_diagnostic.models import Snapshot
 from pc_diagnostic.normalizer import Normalizer
@@ -22,6 +25,9 @@ class Collector:
         self._interval = interval
         self._thread: threading.Thread | None = None
         self._stop_event = threading.Event()
+        # Initialize Alert Evaluator and Dispatcher
+        self.evaluator = AlertEvaluator(DEFAULT_ALERT_RULES)
+        self.dispatcher = AlertDispatcher()
 
     def start(self) -> None:
         """Start the background collection thread."""
@@ -78,6 +84,11 @@ class Collector:
             # Package and push the snapshot to the cache
             snapshot = Snapshot(timestamp=start_tick, readings=snapshot_readings)
             self._cache.push(snapshot)
+
+            # Evaluate alert rules against current snapshot and cache age
+            health = self._cache.health()
+            transitions = self.evaluator.evaluate(snapshot, health.age_s, start_tick)
+            self.dispatcher.dispatch(transitions, start_tick)
 
             # Calculate sleep time to maintain interval,
             # adjusting for execution duration
