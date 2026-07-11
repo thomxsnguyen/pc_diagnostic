@@ -256,9 +256,9 @@ class PsutilProvider(Provider):
 
             # Sort by CPU utilization descending and take top 5
             proc_list.sort(key=lambda x: x[0], reverse=True)
-            top_5 = proc_list[:5]
+            top_5_cpu = proc_list[:5]
 
-            for cpu_pct, rss, pid, name in top_5:
+            for cpu_pct, rss, pid, name in top_5_cpu:
                 # CPU metric
                 readings.append(
                     MetricReading(
@@ -266,7 +266,7 @@ class PsutilProvider(Provider):
                         value=cpu_pct,
                         unit=MetricUnit.PERCENT,
                         source=self.name,
-                        tags={"pid": str(pid), "name": name},
+                        tags={"pid": str(pid), "name": name, "type": "cpu_top"},
                     )
                 )
                 # Memory metric
@@ -276,7 +276,33 @@ class PsutilProvider(Provider):
                         value=rss,
                         unit=MetricUnit.BYTES,
                         source=self.name,
-                        tags={"pid": str(pid), "name": name},
+                        tags={"pid": str(pid), "name": name, "type": "cpu_top"},
+                    )
+                )
+
+            # Sort by Memory RSS descending and take top 5
+            proc_list.sort(key=lambda x: x[1], reverse=True)
+            top_5_mem = proc_list[:5]
+
+            for cpu_pct, rss, pid, name in top_5_mem:
+                # CPU metric
+                readings.append(
+                    MetricReading(
+                        metric="process.cpu_percent",
+                        value=cpu_pct,
+                        unit=MetricUnit.PERCENT,
+                        source=self.name,
+                        tags={"pid": str(pid), "name": name, "type": "mem_top"},
+                    )
+                )
+                # Memory metric
+                readings.append(
+                    MetricReading(
+                        metric="process.memory.used",
+                        value=rss,
+                        unit=MetricUnit.BYTES,
+                        source=self.name,
+                        tags={"pid": str(pid), "name": name, "type": "mem_top"},
                     )
                 )
         except Exception as e:
