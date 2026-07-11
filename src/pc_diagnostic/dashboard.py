@@ -291,7 +291,9 @@ class TerminalDashboard:
         mem_pct = self._get_metric_val(metrics, "memory.utilization", 0.0)
         mem_used = self._get_metric_val(metrics, "memory.used", 0.0)
         mem_avail = self._get_metric_val(metrics, "memory.available", 0.0)
-        mem_total = mem_used + mem_avail
+        mem_total = self._get_metric_val(metrics, "memory.total", 0.0)
+        if mem_total == 0.0:
+            mem_total = mem_used + mem_avail
 
         mem_used_str = format_bytes(mem_used)
         mem_total_str = format_bytes(mem_total)

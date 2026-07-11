@@ -13,3 +13,18 @@
 2026-07-11 02:30:41,424 [INFO] pc_diagnostic: Initializing PC Diagnostic Foundations (Phase 1)...
 2026-07-11 02:30:41,428 [INFO] pc_diagnostic: Registered providers: ['stub', 'psutil', 'smc']
 2026-07-11 02:30:41,429 [INFO] pc_diagnostic.collector: Collector thread started.
+2026-07-11 02:32:39,254 [INFO] pc_diagnostic: Initializing PC Diagnostic Foundations (Phase 1)...
+2026-07-11 02:32:39,258 [INFO] pc_diagnostic: Registered providers: ['stub', 'psutil', 'smc']
+2026-07-11 02:32:39,259 [INFO] pc_diagnostic.collector: Collector thread started.
+2026-07-11 02:52:34,595 [INFO] pc_diagnostic: Initializing PC Diagnostic Foundations (Phase 1)...
+2026-07-11 02:52:34,599 [INFO] pc_diagnostic: Registered providers: ['stub', 'psutil', 'smc']
+2026-07-11 02:52:34,599 [INFO] pc_diagnostic.collector: Collector thread started.
+2026-07-11 02:54:41,836 [INFO] pc_diagnostic: Initializing PC Diagnostic Foundations (Phase 1)...
+2026-07-11 02:54:41,839 [INFO] pc_diagnostic: Registered providers: ['stub', 'psutil', 'smc']
+2026-07-11 02:54:41,839 [INFO] pc_diagnostic.collector: Collector thread started.
+2026-07-11 03:27:40,525 [WARNING] pc_diagnostic.providers.psutil_provider: Failed to read process utilization from psutil: <built-in function proc_cmdline> returned a result with an exception set
+2026-07-11 10:08:36,824 [WARNING] pc_diagnostic.providers.smc_provider: macOS native SMC helper query timed out.
+2026-07-11 10:08:36,831 [WARNING] pc_diagnostic.providers.smc_provider: macOS native SMC helper query timed out.
+2026-07-11 11:38:42,818 [INFO] pc_diagnostic: Initializing PC Diagnostic Foundations (Phase 1)...
+2026-07-11 11:38:42,822 [INFO] pc_diagnostic: Registered providers: ['stub', 'psutil', 'smc']
+2026-07-11 11:38:42,822 [INFO] pc_diagnostic.collector: Collector thread started.

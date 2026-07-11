@@ -88,31 +88,74 @@ class PsutilProvider(Provider):
 
         # 2. Memory metrics
         try:
-            vm = psutil.virtual_memory()
-            readings.append(
-                MetricReading(
-                    metric="memory.used",
-                    value=float(vm.used),
-                    unit=MetricUnit.BYTES,
-                    source=self.name,
+            if platform.system() == "Darwin":
+                mac_vm = self._get_mac_virtual_memory()
+                readings.append(
+                    MetricReading(
+                        metric="memory.total",
+                        value=mac_vm["total"],
+                        unit=MetricUnit.BYTES,
+                        source=self.name,
+                    )
                 )
-            )
-            readings.append(
-                MetricReading(
-                    metric="memory.available",
-                    value=float(vm.available),
-                    unit=MetricUnit.BYTES,
-                    source=self.name,
+                readings.append(
+                    MetricReading(
+                        metric="memory.used",
+                        value=mac_vm["used"],
+                        unit=MetricUnit.BYTES,
+                        source=self.name,
+                    )
                 )
-            )
-            readings.append(
-                MetricReading(
-                    metric="memory.utilization",
-                    value=vm.percent,
-                    unit=MetricUnit.PERCENT,
-                    source=self.name,
+                readings.append(
+                    MetricReading(
+                        metric="memory.available",
+                        value=mac_vm["available"],
+                        unit=MetricUnit.BYTES,
+                        source=self.name,
+                    )
                 )
-            )
+                readings.append(
+                    MetricReading(
+                        metric="memory.utilization",
+                        value=mac_vm["percent"],
+                        unit=MetricUnit.PERCENT,
+                        source=self.name,
+                    )
+                )
+            else:
+                vm = psutil.virtual_memory()
+                readings.append(
+                    MetricReading(
+                        metric="memory.total",
+                        value=float(vm.total),
+                        unit=MetricUnit.BYTES,
+                        source=self.name,
+                    )
+                )
+                readings.append(
+                    MetricReading(
+                        metric="memory.used",
+                        value=float(vm.used),
+                        unit=MetricUnit.BYTES,
+                        source=self.name,
+                    )
+                )
+                readings.append(
+                    MetricReading(
+                        metric="memory.available",
+                        value=float(vm.available),
+                        unit=MetricUnit.BYTES,
+                        source=self.name,
+                    )
+                )
+                readings.append(
+                    MetricReading(
+                        metric="memory.utilization",
+                        value=vm.percent,
+                        unit=MetricUnit.PERCENT,
+                        source=self.name,
+                    )
+                )
         except Exception as e:
             logger.warning(f"Failed to read memory metrics from psutil: {e}")
 
@@ -339,6 +382,67 @@ class PsutilProvider(Provider):
 
         self._last_time = now
         return readings
+
+    def _get_mac_virtual_memory(self) -> dict[str, float]:
+        """Fetch exact macOS Activity Monitor memory metrics by parsing top -l 1."""
+        res = {
+            "total": float(self._total_memory),
+            "used": 0.0,
+            "available": 0.0,
+            "percent": 0.0,
+        }
+        try:
+            out = subprocess.check_output(["top", "-l", "1"]).decode("utf-8")
+            lines = out.splitlines()
+
+            physmem_line = ""
+            for line in lines:
+                if line.startswith("PhysMem:"):
+                    physmem_line = line
+                    break
+
+            if physmem_line:
+                import re
+
+                unused_match = re.search(r"(\d+(?:\.\d+)?[KMG])\s+unused", physmem_line)
+                if unused_match:
+
+                    def parse_size(val_str: str) -> float:
+                        val_str = val_str.strip().upper()
+                        if not val_str:
+                            return 0.0
+                        unit = val_str[-1]
+                        if unit in ("K", "M", "G", "T"):
+                            num_part = val_str[:-1]
+                            val = float(num_part)
+                            if unit == "K":
+                                return val * 1024
+                            elif unit == "M":
+                                return val * 1024 * 1024
+                            elif unit == "G":
+                                return val * 1024 * 1024 * 1024
+                            elif unit == "T":
+                                return val * 1024 * 1024 * 1024 * 1024
+                        return float(val_str)
+
+                    unused_bytes = parse_size(unused_match.group(1))
+                    total_bytes = float(self._total_memory)
+                    used_bytes = max(0.0, total_bytes - unused_bytes)
+
+                    res["used"] = float(used_bytes)
+                    res["available"] = float(unused_bytes)
+                    res["percent"] = (used_bytes / total_bytes) * 100.0
+                    return res
+
+            raise ValueError("PhysMem line not found or parsed from top command")
+        except Exception as e:
+            logger.warning(f"Failed to parse memory from top: {e}")
+            # Fallback
+            vm = psutil.virtual_memory()
+            res["used"] = float(vm.used)
+            res["available"] = float(vm.available)
+            res["percent"] = vm.percent
+        return res
 
     def _get_cpu_model(self) -> str:
         """Helper to retrieve processor brand info across systems."""
