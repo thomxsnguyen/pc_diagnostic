@@ -143,3 +143,30 @@ def test_dashboard_render_populated() -> None:
     assert layout["io"].renderable is not None
     assert layout["processes"].renderable is not None
     assert layout["specs"].renderable is not None
+
+
+def test_generate_sparkline() -> None:
+    cache = RollingCache(maxlen=10)
+    dashboard = TerminalDashboard(cache)
+
+    # 1. Empty cache sparkline should return empty space characters
+    assert dashboard.generate_sparkline("cpu.util", max_val=100.0, n=5) == "     "
+
+    # 2. Populated cache should return correct sparkline blocks
+    for idx, val in enumerate([0.0, 20.0, 50.0, 80.0, 100.0]):
+        cache.push(
+            Snapshot(
+                timestamp=float(100 + idx),
+                readings=[MetricReading("cpu.util", val, MetricUnit.PERCENT, "test")],
+            )
+        )
+
+    sparkline = dashboard.generate_sparkline("cpu.util", max_val=100.0, n=5)
+    # expected block indices for values [0, 20, 50, 80, 100] are:
+    # 0.0 -> 0.0 * 7 = 0 -> " "
+    # 0.2 -> 0.2 * 7 = 1 -> "▂"
+    # 0.5 -> 0.5 * 7 = 3 -> "▄"
+    # 0.8 -> 0.8 * 7 = 5 -> "▆"
+    # 1.0 -> 1.0 * 7 = 7 -> "█"
+    assert len(sparkline) == 5
+    assert sparkline == " ▂▄▆█"
