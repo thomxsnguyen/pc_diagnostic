@@ -4,7 +4,10 @@ version = "0.1.0"
 description = "A cross-platform PC monitoring and AI-diagnostic tool"
 readme = "README.md"
 requires-python = ">=3.11"
-dependencies = []
+dependencies = [
+    "psutil>=5.9.0",
+    "rich>=13.0.0",
+]
 
 [dependency-groups]
 dev = [

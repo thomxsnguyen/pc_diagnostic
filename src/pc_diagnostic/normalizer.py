@@ -2,7 +2,7 @@ import logging
 import math
 import re
 
-from pc_diagnostic.models import MetricReading, MetricUnit
+from pc_diagnostic.models import MetricReading
 
 logger = logging.getLogger(__name__)
 
@@ -37,8 +37,6 @@ class Normalizer:
                 )
                 dropped_count += 1
                 continue
-
-
 
             # 4. Validate source is non-empty
             if not r.source or not isinstance(r.source, str):
