@@ -384,64 +384,38 @@ class PsutilProvider(Provider):
         return readings
 
     def _get_mac_virtual_memory(self) -> dict[str, float]:
-        """Fetch exact macOS Activity Monitor memory metrics by parsing top -l 1."""
+        """Fetch exact macOS Activity Monitor memory metrics natively using psutil."""
         res = {
             "total": float(self._total_memory),
             "used": 0.0,
             "available": 0.0,
             "percent": 0.0,
+            "wired": 0.0,
+            "compressed": 0.0,
         }
         try:
-            out = subprocess.check_output(["top", "-l", "1"]).decode("utf-8")
-            lines = out.splitlines()
+            vm = psutil.virtual_memory()
+            total_bytes = float(vm.total)
+            available_bytes = float(vm.available)
+            used_bytes = max(0.0, total_bytes - available_bytes)
 
-            physmem_line = ""
-            for line in lines:
-                if line.startswith("PhysMem:"):
-                    physmem_line = line
-                    break
+            res["total"] = total_bytes
+            res["used"] = used_bytes
+            res["available"] = available_bytes
+            res["percent"] = vm.percent
 
-            if physmem_line:
-                import re
-
-                unused_match = re.search(r"(\d+(?:\.\d+)?[KMG])\s+unused", physmem_line)
-                if unused_match:
-
-                    def parse_size(val_str: str) -> float:
-                        val_str = val_str.strip().upper()
-                        if not val_str:
-                            return 0.0
-                        unit = val_str[-1]
-                        if unit in ("K", "M", "G", "T"):
-                            num_part = val_str[:-1]
-                            val = float(num_part)
-                            if unit == "K":
-                                return val * 1024
-                            elif unit == "M":
-                                return val * 1024 * 1024
-                            elif unit == "G":
-                                return val * 1024 * 1024 * 1024
-                            elif unit == "T":
-                                return val * 1024 * 1024 * 1024 * 1024
-                        return float(val_str)
-
-                    unused_bytes = parse_size(unused_match.group(1))
-                    total_bytes = float(self._total_memory)
-                    used_bytes = max(0.0, total_bytes - unused_bytes)
-
-                    res["used"] = float(used_bytes)
-                    res["available"] = float(unused_bytes)
-                    res["percent"] = (used_bytes / total_bytes) * 100.0
-                    return res
-
-            raise ValueError("PhysMem line not found or parsed from top command")
+            if hasattr(vm, "wired"):
+                res["wired"] = float(vm.wired)
+            if hasattr(vm, "compressed"):
+                res["compressed"] = float(vm.compressed)
         except Exception as e:
-            logger.warning(f"Failed to parse memory from top: {e}")
-            # Fallback
+            logger.warning(f"Failed to calculate macOS native virtual memory: {e}")
             vm = psutil.virtual_memory()
             res["used"] = float(vm.used)
             res["available"] = float(vm.available)
             res["percent"] = vm.percent
+            if hasattr(vm, "wired"):
+                res["wired"] = float(vm.wired)
         return res
 
     def _get_cpu_model(self) -> str:

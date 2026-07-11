@@ -7,10 +7,12 @@ from pc_diagnostic.providers.stub import StubProvider
 
 def register_providers() -> list[Provider]:
     """Register and return available providers for the current system."""
-    all_providers: list[Provider] = [
-        StubProvider(),
+    real_providers: list[Provider] = [
         PsutilProvider(),
         LhmProvider(),
         SmcProvider(),
     ]
-    return [p for p in all_providers if p.available()]
+    available_reals = [p for p in real_providers if p.available()]
+    if available_reals:
+        return available_reals
+    return [StubProvider()]

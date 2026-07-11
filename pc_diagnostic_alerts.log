@@ -21,3 +21,8 @@
 [2026-07-11 02:59:22] [ALERT] [FIRING] ID=high_cpu Metric=cpu.utilization.total Value=100.00 Threshold=90.00
 [2026-07-11 02:59:26] [ALERT] [CLEARED] ID=high_cpu Metric=cpu.utilization.total Value=34.80 Threshold=90.00
 [2026-07-11 02:59:27] [ALERT] [CLEARED] ID=high_cpu Metric=cpu.utilization.total Value=19.90 Threshold=90.00
+[2026-07-11 11:46:02] [ALERT] [FIRING] ID=high_memory Metric=memory.utilization Value=97.22 Threshold=90.00
+[2026-07-11 11:48:54] [ALERT] [FIRING] ID=high_memory Metric=memory.utilization Value=95.71 Threshold=90.00
+[2026-07-11 11:50:50] [ALERT] [FIRING] ID=high_memory Metric=memory.utilization Value=94.44 Threshold=90.00
+[2026-07-11 11:52:40] [ALERT] [CLEARED] ID=high_memory Metric=memory.utilization Value=83.33 Threshold=90.00
+[2026-07-11 11:53:41] [ALERT] [FIRING] ID=high_memory Metric=memory.utilization Value=94.44 Threshold=90.00
