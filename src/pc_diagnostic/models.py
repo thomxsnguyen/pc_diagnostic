@@ -12,6 +12,7 @@ class MetricUnit(Enum):
     COUNT = "COUNT"
     SECONDS = "SECONDS"
     INFO = "INFO"  # For metadata / static specs
+    VOLTS = "VOLTS"
 
 
 @dataclass(frozen=True)
