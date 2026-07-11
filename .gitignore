@@ -30,3 +30,6 @@ exercises_sandbox.py
 # Artifacts/Documentation
 phase0_technical_design.txt
 pc_diagnostic_project_plan.md.pdf
+
+# Native compiled helpers
+src/pc_diagnostic/providers/smc_helper
