@@ -2,10 +2,12 @@ import logging
 import time
 from typing import Any
 
+from rich.align import Align
 from rich.box import ROUNDED
 from rich.console import Console
 from rich.layout import Layout
 from rich.live import Live
+from rich.markdown import Markdown
 from rich.panel import Panel
 from rich.progress import BarColumn, Progress
 from rich.table import Table
@@ -52,6 +54,10 @@ class TerminalDashboard:
         self.cache = cache
         self.dispatcher = dispatcher
         self.console = Console()
+        self.showing_diagnosis = False
+        self.diagnosis_loading = False
+        self.diagnosis_text = ""
+        self.last_diagnosis_time = 0.0
 
     def _get_metric_val(
         self, metrics: dict[str, list[MetricReading]], name: str, default: float = 0.0
@@ -143,6 +149,42 @@ class TerminalDashboard:
         metrics: dict[str, list[MetricReading]] = {}
         for r in latest.readings:
             metrics.setdefault(r.metric, []).append(r)
+
+        # RENDER DIAGNOSTICS SCREEN OVERLAY IF ACTIVE
+        if self.showing_diagnosis:
+            if self.diagnosis_loading:
+                diag_content = Align.center(
+                    "\n\n[bold yellow]Analyzing system telemetry and reasoning...[/bold yellow]\n"
+                    "[dim](Running Diagnostics Crew & Rules Engine)[/dim]\n\n",
+                    vertical="middle",
+                )
+            else:
+                diag_content = Markdown(self.diagnosis_text)
+
+            # Clean blue header for overlay
+            header_table = Table.grid(expand=True)
+            header_table.add_column(justify="center")
+            header_table.add_row(
+                Text("PC DIAGNOSTIC LIVE TUI MONITOR", style="bold white on blue")
+            )
+
+            layout["header"].update(
+                Panel(
+                    header_table,
+                    box=ROUNDED,
+                    border_style="blue",
+                )
+            )
+
+            layout["body"].update(
+                Panel(
+                    diag_content,
+                    title="[bold magenta]System Telemetry AI Diagnosis[/bold magenta]",
+                    box=ROUNDED,
+                    subtitle="Press any key to close and return to telemetry grid",
+                )
+            )
+            return
 
         # Alarm logic: Check for stale cache
         is_stale = health.age_s > 2.0
@@ -677,18 +719,199 @@ class TerminalDashboard:
             )
         )
 
+    def _run_diagnosis_thread(self, evidence: dict) -> None:
+        try:
+            from pc_diagnostic.diagnostics.crew import run_diagnosis
+
+            report = run_diagnosis(evidence)
+            self.diagnosis_text = report
+        except Exception as e:
+            self.diagnosis_text = (
+                f"# Diagnosis Error\n\nFailed to run diagnostic engine: {e}"
+            )
+        finally:
+            self.diagnosis_loading = False
+
+    def trigger_background_diagnosis(self) -> None:
+        import threading
+
+        now = time.time()
+        if now - self.last_diagnosis_time < 10.0:
+            # Enforce cooldown, but don't re-trigger if loading
+            return
+
+        self.last_diagnosis_time = now
+        self.diagnosis_loading = True
+        self.diagnosis_text = ""
+
+        # Build evidence packet from cache snapshot
+        snapshot = self.cache.snapshot()
+        metrics = snapshot.metrics
+
+        # 1. CPU stats
+        cpu_model = self._get_metric_tag(
+            metrics, "system.info.cpu_model", "value", "Unknown"
+        )
+        cpu_util = self._get_metric_val(metrics, "cpu.utilization.total", 0.0)
+
+        # 2. RAM stats
+        ram_util = self._get_metric_val(metrics, "memory.utilization", 0.0)
+        ram_used = self._get_metric_val(metrics, "memory.used", 0.0)
+
+        # 3. Thermals
+        cpu_temp = self._get_metric_val(metrics, "thermal.cpu_temp", -1.0)
+        gpu_temp = self._get_metric_val(metrics, "thermal.gpu_temp", -1.0)
+        fan_speed = self._get_metric_val(metrics, "thermal.fan_speed", -1.0)
+
+        # 4. Top processes
+        top_cpu_procs = []
+        cpu_pids = metrics.get("process.cpu_percent", [])
+        for p in cpu_pids:
+            if p.tags.get("type") == "cpu_top":
+                pid = p.tags.get("pid", "")
+                name = p.tags.get("name", "Unknown")
+                mem_bytes = 0.0
+                mem_readings = metrics.get("process.memory.used", [])
+                for mr in mem_readings:
+                    if mr.tags.get("pid") == pid and mr.tags.get("type") == "cpu_top":
+                        mem_bytes = mr.value
+                        break
+                top_cpu_procs.append(
+                    {"pid": pid, "name": name, "cpu": p.value, "mem": mem_bytes}
+                )
+
+        top_mem_procs = []
+        mem_pids = metrics.get("process.memory.used", [])
+        for m in mem_pids:
+            if m.tags.get("type") == "mem_top":
+                pid = m.tags.get("pid", "")
+                name = m.tags.get("name", "Unknown")
+                cpu_pct = 0.0
+                cpu_readings = metrics.get("process.cpu_percent", [])
+                for cr in cpu_readings:
+                    if cr.tags.get("pid") == pid and cr.tags.get("type") == "mem_top":
+                        cpu_pct = cr.value
+                        break
+                top_mem_procs.append(
+                    {
+                        "pid": pid,
+                        "name": name,
+                        "cpu": cpu_pct,
+                        "mem_str": format_bytes(m.value),
+                    }
+                )
+
+        # 5. Active incidents from dispatcher
+        active_incidents = []
+        if self.dispatcher:
+            for inc_id, inc in self.dispatcher.active_incidents.items():
+                active_incidents.append(
+                    {
+                        "rule_id": inc_id,
+                        "state": str(inc.state),
+                        "value": inc.value,
+                    }
+                )
+
+        evidence = {
+            "cpu_model": cpu_model,
+            "cpu_util": cpu_util,
+            "ram_util": ram_util,
+            "ram_used_str": format_bytes(ram_used),
+            "cpu_temp": cpu_temp,
+            "gpu_temp": gpu_temp,
+            "fan_speed": fan_speed,
+            "top_cpu_procs": top_cpu_procs,
+            "top_mem_procs": top_mem_procs,
+            "active_incidents": active_incidents,
+        }
+
+        # Spawn diagnosis in background thread
+        t = threading.Thread(
+            target=self._run_diagnosis_thread, args=(evidence,), daemon=True
+        )
+        t.start()
+
     def run(self, refresh_rate: float = 1.0) -> None:
-        """Run TUI monitor loop using Rich Live screen mode."""
-        layout = self.generate_layout()
+        """Run TUI monitor loop with non-blocking key controls."""
+        reader = KeyReader()
 
         # Configure Live rendering screen
         with Live(
-            layout, console=self.console, screen=True, auto_refresh=False
+            None, console=self.console, screen=True, auto_refresh=False
         ) as live:
             try:
                 while True:
+                    # Generate a fresh layout structure on each tick
+                    layout = self.generate_layout()
                     self.render(layout)
                     live.update(layout, refresh=True)
-                    time.sleep(refresh_rate)
+
+                    # Poll for keypresses multiple times
+                    steps = int(refresh_rate * 10)
+                    for _ in range(max(1, steps)):
+                        key = reader.read_key(0.1)
+                        if key:
+                            key_lower = key.lower()
+                            if key_lower == "q":
+                                return
+                            elif key_lower == "d":
+                                if self.showing_diagnosis:
+                                    self.showing_diagnosis = False
+                                else:
+                                    self.showing_diagnosis = True
+                                    self.trigger_background_diagnosis()
+                                break  # Redraw screen immediately
+                            else:
+                                # Any other key resets the diagnosis view once completed
+                                if (
+                                    self.showing_diagnosis
+                                    and not self.diagnosis_loading
+                                ):
+                                    self.showing_diagnosis = False
+                                    break
             except KeyboardInterrupt:
+                pass
+            finally:
+                reader.restore()
+
+
+class KeyReader:
+    """Standard-library non-blocking keyboard input reader for Unix/macOS terminals."""
+
+    def __init__(self) -> None:
+        import sys
+
+        self.fd = sys.stdin.fileno()
+        try:
+            import termios
+            import tty
+
+            self.old_settings = termios.tcgetattr(self.fd)
+            tty.setcbreak(self.fd)
+            self.raw_mode = True
+        except Exception:
+            self.raw_mode = False
+
+    def read_key(self, timeout: float = 0.0) -> str | None:
+        import select
+        import sys
+
+        if not self.raw_mode:
+            return None
+        try:
+            r, _, _ = select.select([sys.stdin], [], [], timeout)
+            if r:
+                return sys.stdin.read(1)
+        except Exception:
+            pass
+        return None
+
+    def restore(self) -> None:
+        if self.raw_mode:
+            import termios
+
+            try:
+                termios.tcsetattr(self.fd, termios.TCSADRAIN, self.old_settings)
+            except Exception:
                 pass
