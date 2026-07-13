@@ -1,11 +1,12 @@
 import logging
 import os
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
 # Try to import CrewAI components for AI diagnostics
 try:
-    from crewai import Agent, Crew, Process, Task  # type: ignore[import-untyped]
+    from crewai import Agent, Crew, Process, Task
 
     CREWAI_AVAILABLE = True
 except ImportError:
@@ -13,9 +14,9 @@ except ImportError:
 
 
 class LocalDiagnosticAnalyzer:
-    """Fallback local diagnostic analyzer when AI keys or CrewAI libraries are unavailable."""
+    """Fallback local diagnostic analyzer when AI/CrewAI are unavailable."""
 
-    def analyze(self, evidence: dict) -> str:
+    def analyze(self, evidence: dict[str, Any]) -> str:
         cpu_util = evidence.get("cpu_util", 0.0)
         ram_util = evidence.get("ram_util", 0.0)
         cpu_temp = evidence.get("cpu_temp", -1.0)
@@ -33,7 +34,9 @@ class LocalDiagnosticAnalyzer:
             if top_cpu_procs:
                 top_p = top_cpu_procs[0]
                 recommendations.append(
-                    f"Runaway process suspected: '{top_p['name']}' (PID {top_p['pid']}) is using {top_p['cpu']:.1f}% CPU. Consider terminating it."
+                    f"Runaway process suspected: '{top_p['name']}' "
+                    f"(PID {top_p['pid']}) is using {top_p['cpu']:.1f}% CPU. "
+                    "Consider terminating it."
                 )
             else:
                 recommendations.append(
@@ -48,7 +51,9 @@ class LocalDiagnosticAnalyzer:
             if top_mem_procs:
                 top_m = top_mem_procs[0]
                 recommendations.append(
-                    f"Memory pressure detected: '{top_m['name']}' (PID {top_m['pid']}) is using {top_m['mem_str']} RAM. Close heavy applications."
+                    f"Memory pressure detected: '{top_m['name']}' "
+                    f"(PID {top_m['pid']}) is using {top_m['mem_str']} RAM. "
+                    "Close heavy applications."
                 )
             else:
                 recommendations.append(
@@ -59,20 +64,24 @@ class LocalDiagnosticAnalyzer:
         max_t = max(cpu_temp, gpu_temp)
         if max_t > 80.0:
             issues.append(
-                f"**High Operating Temperature**: Thermal sensors report up to {max_t:.1f}°C."
+                "**High Operating Temperature**: "
+                f"Thermal sensors report up to {max_t:.1f}°C."
             )
             recommendations.append(
-                "System is running hot. Check airflow vents, clean dust from fans, or reduce high-intensity computations."
+                "System is running hot. Check airflow vents, clean dust "
+                "from fans, or reduce high-intensity computations."
             )
 
         # 4. Evaluate Active Alerts
         if active_incidents:
             for inc in active_incidents:
                 issues.append(
-                    f"**Active Alert ({inc['rule_id']})**: Firing since CPU/RAM threshold was breached."
+                    f"**Active Alert ({inc['rule_id']})**: "
+                    "Firing since CPU/RAM threshold was breached."
                 )
                 recommendations.append(
-                    f"Investigate incident alert rule: '{inc['rule_id']}' limit violation."
+                    "Investigate incident alert rule: "
+                    f"'{inc['rule_id']}' limit violation."
                 )
 
         # Summary Status
@@ -91,7 +100,8 @@ class LocalDiagnosticAnalyzer:
             "## System Telemetry Summary",
             f"- **CPU Model**: {evidence.get('cpu_model', 'Unknown')}",
             f"- **CPU Utilization**: {cpu_util:.1f}%",
-            f"- **Memory Utilization**: {ram_util:.1f}% ({evidence.get('ram_used_str', 'N/A')} used)",
+            f"- **Memory Utilization**: {ram_util:.1f}% "
+            f"({evidence.get('ram_used_str', 'N/A')} used)",
         ]
 
         if cpu_temp != -1.0:
@@ -113,7 +123,8 @@ class LocalDiagnosticAnalyzer:
                 report_lines.append(f"- {issue}")
         else:
             report_lines.append(
-                "- No anomalies or thresholds violated. System parameters are within healthy bounds."
+                "- No anomalies or thresholds violated. "
+                "System parameters are within healthy bounds."
             )
 
         report_lines.extend(
@@ -134,10 +145,10 @@ class LocalDiagnosticAnalyzer:
         return "\n".join(report_lines)
 
 
-def run_diagnosis(evidence_packet: dict) -> str:
+def run_diagnosis(evidence_packet: dict[str, Any]) -> str:
     """Main entry point to execute system diagnostics.
 
-    Attempts to use CrewAI if api key is present, otherwise falls back to local rules-based engine.
+    Attempts to use CrewAI if API key is present, otherwise falls back.
     """
     has_api_key = bool(
         os.environ.get("OPENAI_API_KEY")
@@ -163,8 +174,15 @@ def run_diagnosis(evidence_packet: dict) -> str:
 
             analyst = Agent(
                 role="Senior Systems Performance Analyst",
-                goal="Analyze system telemetry data to diagnose hardware/software performance issues.",
-                backstory="An expert diagnostic engineer specializing in identifying resource leaks, thermal throttling, and process misbehaviors.",
+                goal=(
+                    "Analyze system telemetry data to diagnose "
+                    "hardware/software performance issues."
+                ),
+                backstory=(
+                    "An expert diagnostic engineer specializing in "
+                    "identifying resource leaks, thermal throttling, "
+                    "and process misbehaviors."
+                ),
                 allow_delegation=False,
                 verbose=False,
             )
@@ -173,10 +191,15 @@ def run_diagnosis(evidence_packet: dict) -> str:
                 description=(
                     "Review this system telemetry evidence packet:\n\n"
                     f"{evidence_str}\n\n"
-                    "Identify any performance anomalies, bottlenecks, runaway processes, or overheating risks. "
-                    "Provide a plain-language diagnosis and specific actionable recommendations to resolve the issues."
+                    "Identify any performance anomalies, bottlenecks, "
+                    "runaway processes, or overheating risks. "
+                    "Provide a plain-language diagnosis and specific "
+                    "actionable recommendations to resolve the issues."
                 ),
-                expected_output="A clean, structured markdown report summarizing status, identified anomalies, and recommendations.",
+                expected_output=(
+                    "A clean, structured markdown report summarizing "
+                    "status, identified anomalies, and recommendations."
+                ),
                 agent=analyst,
             )
 

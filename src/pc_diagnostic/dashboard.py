@@ -99,21 +99,24 @@ class TerminalDashboard:
     def generate_layout(self) -> Layout:
         # Initialize layout structure
         layout = Layout()
-        layout.split_column(Layout(name="header", size=4), Layout(name="body"))
-        layout["body"].split_row(
-            Layout(name="left", ratio=1), Layout(name="right", ratio=1)
-        )
-        layout["left"].split_column(
-            Layout(name="cpu", ratio=4),
-            Layout(name="memory", ratio=2),
-            Layout(name="io", ratio=3),
-        )
-        layout["right"].split_column(
-            Layout(name="processes", ratio=4),
-            Layout(name="thermals", ratio=2),
-            Layout(name="alerts", ratio=2),
-            Layout(name="specs", ratio=2),
-        )
+        if self.showing_diagnosis:
+            layout.split_column(Layout(name="header", size=4), Layout(name="body"))
+        else:
+            layout.split_column(Layout(name="header", size=4), Layout(name="body"))
+            layout["body"].split_row(
+                Layout(name="left", ratio=1), Layout(name="right", ratio=1)
+            )
+            layout["left"].split_column(
+                Layout(name="cpu", ratio=4),
+                Layout(name="memory", ratio=2),
+                Layout(name="io", ratio=3),
+            )
+            layout["right"].split_column(
+                Layout(name="processes", ratio=4),
+                Layout(name="thermals", ratio=2),
+                Layout(name="alerts", ratio=2),
+                Layout(name="specs", ratio=2),
+            )
         return layout
 
     def render(self, layout: Layout) -> None:
@@ -152,9 +155,11 @@ class TerminalDashboard:
 
         # RENDER DIAGNOSTICS SCREEN OVERLAY IF ACTIVE
         if self.showing_diagnosis:
+            diag_content: Align | Markdown
             if self.diagnosis_loading:
                 diag_content = Align.center(
-                    "\n\n[bold yellow]Analyzing system telemetry and reasoning...[/bold yellow]\n"
+                    "\n\n[bold yellow]Analyzing system telemetry "
+                    "and reasoning...[/bold yellow]\n"
                     "[dim](Running Diagnostics Crew & Rules Engine)[/dim]\n\n",
                     vertical="middle",
                 )
@@ -719,7 +724,7 @@ class TerminalDashboard:
             )
         )
 
-    def _run_diagnosis_thread(self, evidence: dict) -> None:
+    def _run_diagnosis_thread(self, evidence: dict[str, Any]) -> None:
         try:
             from pc_diagnostic.diagnostics.crew import run_diagnosis
 
@@ -745,8 +750,16 @@ class TerminalDashboard:
         self.diagnosis_text = ""
 
         # Build evidence packet from cache snapshot
-        snapshot = self.cache.snapshot()
-        metrics = snapshot.metrics
+        snapshot = self.cache.latest()
+        if not snapshot:
+            self.diagnosis_loading = False
+            self.diagnosis_text = (
+                "# Diagnosis Error\n\nNo telemetry data available in cache yet."
+            )
+            return
+        metrics: dict[str, list[MetricReading]] = {}
+        for r in snapshot.readings:
+            metrics.setdefault(r.metric, []).append(r)
 
         # 1. CPU stats
         cpu_model = self._get_metric_tag(
