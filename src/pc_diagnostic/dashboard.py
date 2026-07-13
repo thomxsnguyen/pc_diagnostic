@@ -837,9 +837,7 @@ class TerminalDashboard:
         reader = KeyReader()
 
         # Configure Live rendering screen
-        with Live(
-            None, console=self.console, screen=True, auto_refresh=False
-        ) as live:
+        with Live(None, console=self.console, screen=True, auto_refresh=False) as live:
             try:
                 while True:
                     # Generate a fresh layout structure on each tick
@@ -877,7 +875,7 @@ class TerminalDashboard:
 
 
 class KeyReader:
-    """Standard-library non-blocking keyboard input reader for Unix/macOS terminals."""
+    """Non-blocking keyboard input reader for Unix/macOS terminals."""
 
     def __init__(self) -> None:
         import sys
