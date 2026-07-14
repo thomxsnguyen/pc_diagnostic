@@ -3,6 +3,13 @@ import logging
 import sys
 import time
 
+try:
+    from dotenv import load_dotenv
+
+    load_dotenv()
+except ImportError:
+    pass
+
 from pc_diagnostic.cache import RollingCache
 from pc_diagnostic.collector import Collector
 from pc_diagnostic.dashboard import TerminalDashboard
