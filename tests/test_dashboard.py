@@ -1,3 +1,7 @@
+import typing
+
+import pytest
+
 from pc_diagnostic.cache import RollingCache
 from pc_diagnostic.dashboard import (
     TerminalDashboard,
@@ -172,3 +176,39 @@ def test_generate_sparkline() -> None:
     # 1.0 -> 1.0 * 7 = 7 -> "█"
     assert len(sparkline) == 5
     assert sparkline == " ▂▄▆█"
+
+
+def test_check_for_updates(monkeypatch: pytest.MonkeyPatch) -> None:
+    import json
+    from urllib.request import Request
+
+    class MockResponse:
+        def __init__(self, data: bytes) -> None:
+            self.data = data
+
+        def __enter__(self) -> "MockResponse":
+            return self
+
+        def __exit__(
+            self, exc_type: typing.Any, exc_val: typing.Any, exc_tb: typing.Any
+        ) -> None:
+            pass
+
+        def read(self) -> bytes:
+            return self.data
+
+    def mock_urlopen(req: Request, timeout: float = 3.0) -> MockResponse:
+        mock_data = {"tag_name": "v0.2.0"}
+        return MockResponse(json.dumps(mock_data).encode())
+
+    # We need to import typing for typing.Any
+
+    monkeypatch.setattr("urllib.request.urlopen", mock_urlopen)
+
+    cache = RollingCache(maxlen=10)
+    dashboard = TerminalDashboard(cache)
+
+    dashboard._check_for_updates()
+
+    assert dashboard.latest_version == "0.2.0"
+    assert dashboard.update_available is True

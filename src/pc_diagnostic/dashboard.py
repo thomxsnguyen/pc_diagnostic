@@ -58,6 +58,13 @@ class TerminalDashboard:
         self.diagnosis_loading = False
         self.diagnosis_text = ""
         self.last_diagnosis_time = 0.0
+        self.update_available = False
+        self.latest_version = ""
+
+        # Asynchronously check for application updates on startup
+        import threading
+
+        threading.Thread(target=self._check_for_updates, daemon=True).start()
 
     def _get_metric_val(
         self, metrics: dict[str, list[MetricReading]], name: str, default: float = 0.0
@@ -718,11 +725,44 @@ class TerminalDashboard:
             cap_str = format_bytes(mem_total)
         specs_table.add_row(Text("Total RAM Capacity:"), Text(cap_str, style="dim"))
 
+        # Add Update/Version row to specs
+        if self.update_available:
+            specs_table.add_row(
+                Text("App Update:"),
+                Text(f"v{self.latest_version} Available!", style="bold yellow"),
+            )
+        else:
+            specs_table.add_row(
+                Text("App Version:"),
+                Text("v0.1.0 (Latest)", style="dim"),
+            )
+
         layout["specs"].update(
             Panel(
                 specs_table, title="[bold blue]Cache & Specs[/bold blue]", box=ROUNDED
             )
         )
+
+    def _check_for_updates(self) -> None:
+        """Asynchronously query the GitHub Releases endpoint for new updates."""
+        import json
+        import urllib.request
+
+        try:
+            req = urllib.request.Request(
+                "https://api.github.com/repos/thomxsnguyen/pc_diagnostic/releases/latest",
+                headers={"User-Agent": "PC-Diagnostic-App"},
+            )
+            with urllib.request.urlopen(req, timeout=3.0) as response:
+                data = json.loads(response.read().decode())
+                tag_name = data.get("tag_name", "").strip()
+                if tag_name:
+                    ver = tag_name.lstrip("v")
+                    self.latest_version = ver
+                    if ver != "0.1.0":
+                        self.update_available = True
+        except Exception as e:
+            logger.debug(f"Update check failed/offline: {e}")
 
     def _run_diagnosis_thread(self, evidence: dict[str, Any]) -> None:
         try:
