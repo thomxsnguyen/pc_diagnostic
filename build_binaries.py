@@ -39,6 +39,32 @@ def compile_mac_helper() -> None:
         sys.exit(1)
 
 
+def sign_binary(target_path: str, description: str) -> None:
+    """Perform ad-hoc code signing on macOS for a specific binary."""
+    if platform.system() != "Darwin":
+        return
+    if not os.path.exists(target_path):
+        return
+
+    # Determine signature identity: default to ad-hoc "-" if not specified
+    identity = os.environ.get("CODESIGN_IDENTITY", "-")
+    print(f"[INFO] Signing {description} with identity: {identity}")
+    sign_cmd = [
+        "codesign",
+        "--force",
+        "--options",
+        "runtime",
+        "--sign",
+        identity,
+        target_path,
+    ]
+    try:
+        subprocess.run(sign_cmd, check=True)
+        print(f"[SUCCESS] Signed {description} at {target_path}")
+    except Exception as e:
+        print(f"[WARNING] Failed to sign {description}: {e}")
+
+
 def build_pyinstaller_binary() -> None:
     """Run PyInstaller using the spec configuration."""
     current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -75,7 +101,25 @@ def verify_build_output() -> None:
 
 if __name__ == "__main__":
     print("=== PC Diagnostic Standalone Compiler ===")
+
+    # 1. Compile native helper on macOS
     compile_mac_helper()
+
+    # 2. Code-sign nested helper binary (macOS specific) before packaging
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    helper_path = os.path.join(
+        current_dir, "src", "pc_diagnostic", "providers", "smc_helper"
+    )
+    sign_binary(helper_path, "SMC Helper C tool")
+
+    # 3. Build standalone executable
     build_pyinstaller_binary()
+
+    # 4. Code-sign the final application bundle (macOS specific)
+    executable_name = "pc_diagnostic"
+    exe_path = os.path.join(current_dir, "dist", executable_name)
+    sign_binary(exe_path, "Main Application Bundle")
+
+    # 5. Verify build output
     verify_build_output()
     print("=========================================")
