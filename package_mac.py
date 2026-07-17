@@ -19,8 +19,8 @@ def build_dmg() -> None:
     launcher_content = (
         "#!/bin/bash\n"
         'DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"\n'
-        'osascript -e "tell application \\"Terminal\\" to do script \\"\'$DIR/pc_diagnostic\'\\"" '
-        '-e "activate application \\"Terminal\\""\n'
+        'osascript -e "tell application \\"Terminal\\" to do script '
+        '\\"\'$DIR/pc_diagnostic\'\\"" -e "activate application \\"Terminal\\""\n'
     )
     with open(launcher_path, "w") as f:
         f.write(launcher_content)
@@ -30,9 +30,9 @@ def build_dmg() -> None:
     src_binary = os.path.join(dist_dir, "pc_diagnostic")
     dest_binary = os.path.join(macos_dir, "pc_diagnostic")
     if not os.path.exists(src_binary):
-        print(f"[ERROR] Source binary not found at: {src_binary}. Run build_binaries.py first.")
+        print("[ERROR] Source binary not found. Please run build_binaries.py first.")
         sys.exit(1)
-    
+
     # Copy binary
     subprocess.run(["cp", src_binary, dest_binary], check=True)
     os.chmod(dest_binary, 0o755)
@@ -44,19 +44,19 @@ def build_dmg() -> None:
         '<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" '
         '"http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n'
         '<plist version="1.0">\n'
-        '<dict>\n'
-        '    <key>CFBundleExecutable</key>\n'
-        '    <string>launcher</string>\n'
-        '    <key>CFBundleIdentifier</key>\n'
-        '    <string>com.diagnostic.pc-diagnostic</string>\n'
-        '    <key>CFBundleName</key>\n'
-        '    <string>PC Diagnostic</string>\n'
-        '    <key>CFBundlePackageType</key>\n'
-        '    <string>APPL</string>\n'
-        '    <key>CFBundleShortVersionString</key>\n'
-        '    <string>0.1.0</string>\n'
-        '</dict>\n'
-        '</plist>\n'
+        "<dict>\n"
+        "    <key>CFBundleExecutable</key>\n"
+        "    <string>launcher</string>\n"
+        "    <key>CFBundleIdentifier</key>\n"
+        "    <string>com.diagnostic.pc-diagnostic</string>\n"
+        "    <key>CFBundleName</key>\n"
+        "    <string>PC Diagnostic</string>\n"
+        "    <key>CFBundlePackageType</key>\n"
+        "    <string>APPL</string>\n"
+        "    <key>CFBundleShortVersionString</key>\n"
+        "    <string>0.1.0</string>\n"
+        "</dict>\n"
+        "</plist>\n"
     )
     with open(plist_path, "w") as f:
         f.write(plist_content)
@@ -71,19 +71,24 @@ def build_dmg() -> None:
     try:
         subprocess.run(["create-dmg", "--version"], capture_output=True, check=True)
     except Exception:
-        print("[INFO] 'create-dmg' utility is not installed. Installing via Homebrew...")
+        print(
+            "[INFO] 'create-dmg' utility is not installed. Installing via Homebrew..."
+        )
         try:
             subprocess.run(["brew", "install", "create-dmg"], check=True)
         except Exception as e:
-            print(f"[ERROR] Failed to install 'create-dmg'. Please install it manually: brew install create-dmg. Error: {e}")
+            print(
+                "[ERROR] Failed to install 'create-dmg'. "
+                f"Please run 'brew install create-dmg' manually. Error: {e}"
+            )
             sys.exit(1)
 
     dmg_root = os.path.join(dist_dir, "dmg_root")
     os.makedirs(dmg_root, exist_ok=True)
-    
+
     # Copy app bundle to dmg root
     subprocess.run(["cp", "-R", app_dir, dmg_root], check=True)
-    
+
     # Link Applications
     apps_link = os.path.join(dmg_root, "Applications")
     if not os.path.exists(apps_link):
@@ -95,14 +100,26 @@ def build_dmg() -> None:
 
     dmg_cmd = [
         "create-dmg",
-        "--volname", "PC Diagnostic Installer",
-        "--window-pos", "200", "120",
-        "--window-size", "500", "350",
-        "--icon-size", "100",
-        "--icon", "PC Diagnostic.app", "130", "175",
-        "--icon", "Applications", "370", "175",
+        "--volname",
+        "PC Diagnostic Installer",
+        "--window-pos",
+        "200",
+        "120",
+        "--window-size",
+        "500",
+        "350",
+        "--icon-size",
+        "100",
+        "--icon",
+        "PC Diagnostic.app",
+        "130",
+        "175",
+        "--icon",
+        "Applications",
+        "370",
+        "175",
         output_dmg,
-        dmg_root
+        dmg_root,
     ]
     try:
         subprocess.run(dmg_cmd, check=True)
