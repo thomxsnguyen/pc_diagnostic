@@ -40,7 +40,7 @@ def compile_mac_helper() -> None:
 
 
 def sign_binary(target_path: str, description: str) -> None:
-    """Perform ad-hoc code signing on macOS for a specific binary."""
+    """Perform code signing on macOS for a specific binary."""
     if platform.system() != "Darwin":
         return
     if not os.path.exists(target_path):
@@ -49,15 +49,51 @@ def sign_binary(target_path: str, description: str) -> None:
     # Determine signature identity: default to ad-hoc "-" if not specified
     identity = os.environ.get("CODESIGN_IDENTITY", "-")
     print(f"[INFO] Signing {description} with identity: {identity}")
-    sign_cmd = [
-        "codesign",
-        "--force",
-        "--options",
-        "runtime",
-        "--sign",
-        identity,
-        target_path,
-    ]
+
+    if identity == "-":
+        # For local ad-hoc signing, do not enforce hardened runtime to allow
+        # loading Python shared libraries from different Team IDs.
+        sign_cmd = [
+            "codesign",
+            "--force",
+            "--sign",
+            identity,
+            target_path,
+        ]
+    else:
+        # For production Developer ID distribution, use entitlements file
+        # with library validation disabled.
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        entitlements_path = os.path.join(current_dir, "entitlements.plist")
+
+        # Write entitlements plist dynamically if missing
+        if not os.path.exists(entitlements_path):
+            plist_content = (
+                '<?xml version="1.0" encoding="UTF-8"?>\n'
+                '<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" '
+                '"http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n'
+                '<plist version="1.0">\n'
+                "<dict>\n"
+                "    <key>com.apple.security.cs.disable-library-validation</key>\n"
+                "    <true/>\n"
+                "</dict>\n"
+                "</plist>\n"
+            )
+            with open(entitlements_path, "w") as f:
+                f.write(plist_content)
+
+        sign_cmd = [
+            "codesign",
+            "--force",
+            "--options",
+            "runtime",
+            "--entitlements",
+            entitlements_path,
+            "--sign",
+            identity,
+            target_path,
+        ]
+
     try:
         subprocess.run(sign_cmd, check=True)
         print(f"[SUCCESS] Signed {description} at {target_path}")

@@ -52,3 +52,13 @@
 2026-07-15 17:03:45,466 [INFO] pc_diagnostic: Registered providers: ['psutil', 'smc']
 2026-07-15 17:03:45,466 [INFO] pc_diagnostic.collector: Collector thread started.
 2026-07-15 17:03:48,455 [INFO] crewai_core.settings: Using config path: /Users/thomxsnguyen/.config/crewai/settings.json
+2026-07-16 15:15:03,489 [INFO] pc_diagnostic: Initializing PC Diagnostic Foundations (Phase 1)...
+2026-07-16 15:15:03,493 [INFO] pc_diagnostic: Registered providers: ['psutil', 'smc']
+2026-07-16 15:15:03,494 [INFO] pc_diagnostic.collector: Collector thread started.
+2026-07-16 15:15:19,150 [INFO] crewai_core.settings: Using config path: /Users/thomxsnguyen/.config/crewai/settings.json
+2026-07-16 21:58:43,408 [INFO] pc_diagnostic: Initializing PC Diagnostic Foundations (Phase 1)...
+2026-07-16 21:58:43,417 [INFO] pc_diagnostic: Registered providers: ['psutil', 'smc']
+2026-07-16 21:58:43,422 [INFO] pc_diagnostic.collector: Collector thread started.
+2026-07-16 21:58:56,703 [INFO] pc_diagnostic.collector: Stopping collector thread...
+2026-07-16 21:58:56,703 [INFO] pc_diagnostic.collector: Collector thread stopped.
+2026-07-16 21:58:56,703 [INFO] pc_diagnostic: PC Diagnostic stopped.
