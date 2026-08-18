@@ -163,7 +163,7 @@ pc_diagnostic/
 ├── build_binaries.py          # PyInstaller build pipeline
 ├── package_mac.py             # macOS DMG packaging
 ├── pc_diagnostic.spec         # PyInstaller spec file
-├── doc/                       # Design documentation (this folder)
+├── docs/                      # Design documentation (this folder)
 ├── src/
 │   └── pc_diagnostic/
 │       ├── __init__.py
