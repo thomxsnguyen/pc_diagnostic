@@ -3,8 +3,8 @@ from __future__ import annotations
 from typing import Any
 
 try:
-    from PySide6.QtCore import QPointF, QRectF, Qt
-    from PySide6.QtGui import QColor, QFont, QPainter, QPainterPath, QPen
+    from PySide6.QtCore import QRectF, Qt
+    from PySide6.QtGui import QColor, QFont, QPainter, QPen
     from PySide6.QtWidgets import QWidget
 
     PYSIDE6_AVAILABLE = True
@@ -118,13 +118,19 @@ class RadialGaugeWidget(QWidget):
         total_span = 240.0
 
         # 1. Draw Background Track Arc
-        track_pen = QPen(self._color_track, pen_width, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap)
+        track_pen = QPen(
+            self._color_track, pen_width, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap
+        )
         painter.setPen(track_pen)
         painter.setBrush(Qt.BrushStyle.NoBrush)
         painter.drawArc(rect, int(start_angle * 16), int(-total_span * 16))
 
         # 2. Draw Active Value Arc
-        norm_val = (self._value - self._min_val) / (self._max_val - self._min_val) if self._max_val > self._min_val else 0.0
+        norm_val = (
+            (self._value - self._min_val) / (self._max_val - self._min_val)
+            if self._max_val > self._min_val
+            else 0.0
+        )
         value_span = total_span * norm_val
         if value_span > 0.1:
             active_pen = QPen(
@@ -154,7 +160,11 @@ class RadialGaugeWidget(QWidget):
         val_font.setPointSize(20)
         val_font.setBold(True)
         painter.setFont(val_font)
-        val_str = f"{self._value:.0f}{self._unit}" if self._unit == "%" else f"{self._value:.1f}{self._unit}"
+        val_str = (
+            f"{self._value:.0f}{self._unit}"
+            if self._unit == "%"
+            else f"{self._value:.1f}{self._unit}"
+        )
         painter.drawText(
             QRectF(0, center_y - 14, width, 30),
             Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter,

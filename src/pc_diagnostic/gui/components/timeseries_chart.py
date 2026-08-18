@@ -4,19 +4,12 @@ from collections import deque
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from pc_diagnostic.cache import RollingCache
+    pass
 
 try:
     from PySide6.QtCore import QPointF, QRectF, Qt
     from PySide6.QtGui import QColor, QFont, QPainter, QPainterPath, QPen
-    from PySide6.QtWidgets import (
-        QCheckBox,
-        QFrame,
-        QHBoxLayout,
-        QLabel,
-        QVBoxLayout,
-        QWidget,
-    )
+    from PySide6.QtWidgets import QWidget
 
     PYSIDE6_AVAILABLE = True
 except ImportError:
@@ -139,7 +132,9 @@ class TimeSeriesChart(QWidget):
 
         for step in [0.0, 0.25, 0.5, 0.75, 1.0]:
             y = padding_top + plot_h - (plot_h * step)
-            painter.drawLine(QPointF(padding_left, y), QPointF(padding_left + plot_w, y))
+            painter.drawLine(
+                QPointF(padding_left, y), QPointF(padding_left + plot_w, y)
+            )
 
             # Y-axis label
             painter.setPen(self._color_text)
@@ -151,7 +146,13 @@ class TimeSeriesChart(QWidget):
             painter.setPen(grid_pen)
 
         # 3. Draw X-axis time marks (-60s, -45s, -30s, -15s, Now)
-        time_labels = [("-60s", 0.0), ("-45s", 0.25), ("-30s", 0.5), ("-15s", 0.75), ("Now", 1.0)]
+        time_labels = [
+            ("-60s", 0.0),
+            ("-45s", 0.25),
+            ("-30s", 0.5),
+            ("-15s", 0.75),
+            ("Now", 1.0),
+        ]
         painter.setPen(self._color_text)
         for lbl, ratio in time_labels:
             x = padding_left + (plot_w * ratio)
@@ -162,7 +163,7 @@ class TimeSeriesChart(QWidget):
             )
 
         # 4. Draw Metric Lines
-        for metric, info in self._series.items():
+        for _metric, info in self._series.items():
             if not info["visible"]:
                 continue
 
@@ -171,7 +172,13 @@ class TimeSeriesChart(QWidget):
                 continue
 
             color = info["color"]
-            pen = QPen(color, 2.0, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap, Qt.PenJoinStyle.RoundJoin)
+            pen = QPen(
+                color,
+                2.0,
+                Qt.PenStyle.SolidLine,
+                Qt.PenCapStyle.RoundCap,
+                Qt.PenJoinStyle.RoundJoin,
+            )
             painter.setPen(pen)
 
             path = QPainterPath()
@@ -195,7 +202,7 @@ class TimeSeriesChart(QWidget):
         # 5. Draw Legend (Top Right)
         legend_x = padding_left + 10
         painter.setFont(font)
-        for metric, info in self._series.items():
+        for _metric, info in self._series.items():
             color = info["color"]
             label = info["label"]
 

@@ -88,7 +88,9 @@ def main() -> None:
     is_tty = sys.stdout.isatty()
     run_in_log_mode = args.log or (not is_tty and not args.gui)
     run_in_tui_mode = args.tui
-    run_in_gui_mode = args.gui or (not run_in_log_mode and not run_in_tui_mode and PYSIDE6_AVAILABLE)
+    run_in_gui_mode = args.gui or (
+        not run_in_log_mode and not run_in_tui_mode and PYSIDE6_AVAILABLE
+    )
 
     setup_logging(run_in_log_mode)
     logger.info("Initializing PC Diagnostic...")

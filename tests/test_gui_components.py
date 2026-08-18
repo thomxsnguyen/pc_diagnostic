@@ -35,7 +35,9 @@ class TestGuiComponents(unittest.TestCase):
         chart.add_point("cpu.utilization.total", 75.0)
 
         self.assertEqual(len(chart._series["cpu.utilization.total"]["values"]), 2)
-        self.assertEqual(list(chart._series["cpu.utilization.total"]["values"]), [50.0, 75.0])
+        self.assertEqual(
+            list(chart._series["cpu.utilization.total"]["values"]), [50.0, 75.0]
+        )
 
         # Test visibility toggle
         chart.set_series_visibility("cpu.utilization.total", False)
@@ -44,9 +46,24 @@ class TestGuiComponents(unittest.TestCase):
     def test_timeseries_chart_snapshot_update(self) -> None:
         chart = TimeSeriesChart(maxlen=60)
         readings = [
-            MetricReading(metric="cpu.utilization.total", value=30.0, unit=MetricUnit.PERCENT, source="test"),
-            MetricReading(metric="memory.utilization", value=60.0, unit=MetricUnit.PERCENT, source="test"),
-            MetricReading(metric="disk.read_bytes_per_sec", value=10 * 1024 * 1024, unit=MetricUnit.BYTES_PER_SEC, source="test"),
+            MetricReading(
+                metric="cpu.utilization.total",
+                value=30.0,
+                unit=MetricUnit.PERCENT,
+                source="test",
+            ),
+            MetricReading(
+                metric="memory.utilization",
+                value=60.0,
+                unit=MetricUnit.PERCENT,
+                source="test",
+            ),
+            MetricReading(
+                metric="disk.read_bytes_per_sec",
+                value=10 * 1024 * 1024,
+                unit=MetricUnit.BYTES_PER_SEC,
+                source="test",
+            ),
         ]
         snap = Snapshot(timestamp=time.time(), readings=readings)
         chart.update_from_snapshot(snap)
@@ -54,16 +71,43 @@ class TestGuiComponents(unittest.TestCase):
         self.assertEqual(len(chart._series["cpu.utilization.total"]["values"]), 1)
         self.assertEqual(chart._series["cpu.utilization.total"]["values"][0], 30.0)
         self.assertEqual(chart._series["memory.utilization"]["values"][0], 60.0)
-        self.assertEqual(chart._series["disk.read_bytes_per_sec"]["values"][0], 10.0)  # Converted to MB/s
+        self.assertEqual(
+            chart._series["disk.read_bytes_per_sec"]["values"][0], 10.0
+        )  # Converted to MB/s
 
     def test_storage_network_card_update(self) -> None:
         card = StorageNetworkCard()
         readings = [
-            MetricReading(metric="disk.used_bytes", value=500 * (1024 ** 3), unit=MetricUnit.BYTES, source="test"),
-            MetricReading(metric="disk.read_bytes_per_sec", value=5 * 1024 * 1024, unit=MetricUnit.BYTES_PER_SEC, source="test"),
-            MetricReading(metric="disk.write_bytes_per_sec", value=2 * 1024 * 1024, unit=MetricUnit.BYTES_PER_SEC, source="test"),
-            MetricReading(metric="network.rx_bytes_per_sec", value=1024 * 1024, unit=MetricUnit.BYTES_PER_SEC, source="test"),
-            MetricReading(metric="network.tx_bytes_per_sec", value=512 * 1024, unit=MetricUnit.BYTES_PER_SEC, source="test"),
+            MetricReading(
+                metric="disk.used_bytes",
+                value=500 * (1024**3),
+                unit=MetricUnit.BYTES,
+                source="test",
+            ),
+            MetricReading(
+                metric="disk.read_bytes_per_sec",
+                value=5 * 1024 * 1024,
+                unit=MetricUnit.BYTES_PER_SEC,
+                source="test",
+            ),
+            MetricReading(
+                metric="disk.write_bytes_per_sec",
+                value=2 * 1024 * 1024,
+                unit=MetricUnit.BYTES_PER_SEC,
+                source="test",
+            ),
+            MetricReading(
+                metric="network.rx_bytes_per_sec",
+                value=1024 * 1024,
+                unit=MetricUnit.BYTES_PER_SEC,
+                source="test",
+            ),
+            MetricReading(
+                metric="network.tx_bytes_per_sec",
+                value=512 * 1024,
+                unit=MetricUnit.BYTES_PER_SEC,
+                source="test",
+            ),
         ]
         snap = Snapshot(timestamp=time.time(), readings=readings)
         card.update_snapshot(snap)
@@ -83,14 +127,24 @@ class TestGuiComponents(unittest.TestCase):
                 value=24.5,
                 unit=MetricUnit.PERCENT,
                 source="test",
-                tags={"type": "cpu_top", "pid": "1234", "name": "python", "mem_str": "250 MB"},
+                tags={
+                    "type": "cpu_top",
+                    "pid": "1234",
+                    "name": "python",
+                    "mem_str": "250 MB",
+                },
             ),
             MetricReading(
                 metric="process.cpu",
                 value=12.0,
                 unit=MetricUnit.PERCENT,
                 source="test",
-                tags={"type": "cpu_top", "pid": "5678", "name": "chrome", "mem_str": "1.2 GB"},
+                tags={
+                    "type": "cpu_top",
+                    "pid": "5678",
+                    "name": "chrome",
+                    "mem_str": "1.2 GB",
+                },
             ),
         ]
         snap = Snapshot(timestamp=time.time(), readings=readings)

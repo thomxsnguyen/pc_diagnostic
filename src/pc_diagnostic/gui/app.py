@@ -18,17 +18,15 @@ from pc_diagnostic.gui.views import (
 if TYPE_CHECKING:
     from pc_diagnostic.alerts.dispatcher import AlertDispatcher
     from pc_diagnostic.cache import RollingCache
-    from pc_diagnostic.models import CacheHealth, Snapshot
+    from pc_diagnostic.models import CacheHealth
 
 logger = logging.getLogger(__name__)
 
 if PYSIDE6_AVAILABLE:
-    from PySide6.QtCore import Qt
     from PySide6.QtWidgets import (
         QApplication,
         QButtonGroup,
         QComboBox,
-        QFrame,
         QHBoxLayout,
         QLabel,
         QMainWindow,
@@ -52,7 +50,8 @@ class MainWindow(QMainWindow):
     ) -> None:
         if not PYSIDE6_AVAILABLE:
             raise RuntimeError(
-                "PySide6 is not available. Please install PySide6 to run the desktop GUI."
+                "PySide6 is not available. Please install PySide6 "
+                "to run the desktop GUI."
             )
         super().__init__(parent)
         self.bridge = bridge
@@ -98,12 +97,12 @@ class MainWindow(QMainWindow):
         self.diagnostics_view = DiagnosticsView(self.bridge)
         self.settings_view = SettingsView(self.bridge)
 
-        self.stack.addWidget(self.overview_view)      # Index 0
-        self.stack.addWidget(self.sensors_view)       # Index 1
-        self.stack.addWidget(self.processes_view)     # Index 2
-        self.stack.addWidget(self.alerts_view)        # Index 3
-        self.stack.addWidget(self.diagnostics_view)   # Index 4
-        self.stack.addWidget(self.settings_view)      # Index 5
+        self.stack.addWidget(self.overview_view)  # Index 0
+        self.stack.addWidget(self.sensors_view)  # Index 1
+        self.stack.addWidget(self.processes_view)  # Index 2
+        self.stack.addWidget(self.alerts_view)  # Index 3
+        self.stack.addWidget(self.diagnostics_view)  # Index 4
+        self.stack.addWidget(self.settings_view)  # Index 5
 
         body_layout.addWidget(self.stack, stretch=1)
         root_layout.addLayout(body_layout, stretch=1)

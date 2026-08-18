@@ -32,8 +32,10 @@ class ThemeTokens:
     status_warning: str
     status_critical: str
     status_info: str
-    font_family: str = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
-    font_family_mono: str = "'SF Mono', Monaco, 'Cascadia Code', 'Courier New', monospace"
+    font_family: str = "'Segoe UI', 'Helvetica Neue', Arial, sans-serif"
+    font_family_mono: str = (
+        "'SF Mono', Monaco, 'Cascadia Code', 'Courier New', monospace"
+    )
 
 
 CYBERPUNK_DARK = ThemeTokens(
@@ -134,7 +136,7 @@ class ThemeManager:
         return self.get_stylesheet()
 
     def get_stylesheet(self) -> str:
-        """Generate comprehensive, polished Qt QSS stylesheet based on current tokens."""
+        """Generate polished Qt QSS stylesheet based on current tokens."""
         t = self._tokens
         return f"""
         /* ===================================================================

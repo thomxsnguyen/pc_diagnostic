@@ -2,17 +2,16 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
+from pc_diagnostic.gui.views.overview_view import OverviewView
+from pc_diagnostic.gui.views.sensors_view import SensorsView
+
 if TYPE_CHECKING:
     from pc_diagnostic.gui.bridge import TelemetryBridge
 
 try:
-    from PySide6.QtCore import Qt
     from PySide6.QtWidgets import (
         QFrame,
-        QHBoxLayout,
         QLabel,
-        QPushButton,
-        QScrollArea,
         QVBoxLayout,
         QWidget,
     )
@@ -37,33 +36,6 @@ class BaseView(QWidget):
         pass
 
 
-from pc_diagnostic.gui.views.overview_view import OverviewView
-
-
-class SensorsView(BaseView):
-    """Hardware Thermals & Sensors View (Phase 3)."""
-
-    def _init_ui(self) -> None:
-        if not PYSIDE6_AVAILABLE:
-            return
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(20, 20, 20, 20)
-        layout.setSpacing(16)
-
-        title = QLabel("Hardware & Thermal Sensors")
-        title.setStyleSheet("font-size: 18px; font-weight: 800;")
-        layout.addWidget(title)
-
-        card = QFrame()
-        card.setProperty("class", "card")
-        card_layout = QVBoxLayout(card)
-        card_layout.addWidget(
-            QLabel("Per-core CPU frequencies, temperatures, fan speeds, and voltage rails.")
-        )
-        layout.addWidget(card)
-        layout.addStretch()
-
-
 class ProcessesView(BaseView):
     """Process Inspector & Task Manager View (Phase 4)."""
 
@@ -82,7 +54,9 @@ class ProcessesView(BaseView):
         card.setProperty("class", "card")
         card_layout = QVBoxLayout(card)
         card_layout.addWidget(
-            QLabel("Interactive sortable process table with CPU, Memory, I/O inspection.")
+            QLabel(
+                "Interactive sortable process table with CPU, Memory, I/O inspection."
+            )
         )
         layout.addWidget(card)
         layout.addStretch()
@@ -106,7 +80,7 @@ class AlertsView(BaseView):
         card.setProperty("class", "card")
         card_layout = QVBoxLayout(card)
         card_layout.addWidget(
-            QLabel("Active incidents, threshold configuration, and historical notification log.")
+            QLabel("Active incidents, threshold configuration, and notification log.")
         )
         layout.addWidget(card)
         layout.addStretch()
@@ -130,7 +104,10 @@ class DiagnosticsView(BaseView):
         card.setProperty("class", "card")
         card_layout = QVBoxLayout(card)
         card_layout.addWidget(
-            QLabel("On-demand CrewAI system diagnostics, evidence inspector, and markdown report generator.")
+            QLabel(
+                "On-demand CrewAI system diagnostics, "
+                "evidence inspector, and report generator."
+            )
         )
         layout.addWidget(card)
         layout.addStretch()
@@ -154,7 +131,18 @@ class SettingsView(BaseView):
         card.setProperty("class", "card")
         card_layout = QVBoxLayout(card)
         card_layout.addWidget(
-            QLabel("Theme customization, telemetry refresh interval, and hardware provider settings.")
+            QLabel("Theme customization, refresh interval, and hardware settings.")
         )
         layout.addWidget(card)
         layout.addStretch()
+
+
+__all__ = [
+    "AlertsView",
+    "BaseView",
+    "DiagnosticsView",
+    "OverviewView",
+    "ProcessesView",
+    "SensorsView",
+    "SettingsView",
+]

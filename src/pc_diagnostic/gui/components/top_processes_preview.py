@@ -6,7 +6,6 @@ try:
     from PySide6.QtCore import Qt
     from PySide6.QtWidgets import (
         QFrame,
-        QHBoxLayout,
         QHeaderView,
         QLabel,
         QTableWidget,
@@ -48,27 +47,48 @@ class TopProcessesPreview(QFrame):
         self.table = QTableWidget(5, 4)
         self.table.setHorizontalHeaderLabels(["PID", "Process Name", "CPU %", "RAM"])
         self.table.verticalHeader().setVisible(False)
-        self.table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
-        self.table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
-        self.table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
-        self.table.horizontalHeader().setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)
+        self.table.horizontalHeader().setSectionResizeMode(
+            1, QHeaderView.ResizeMode.Stretch
+        )
+        self.table.horizontalHeader().setSectionResizeMode(
+            0, QHeaderView.ResizeMode.ResizeToContents
+        )
+        self.table.horizontalHeader().setSectionResizeMode(
+            2, QHeaderView.ResizeMode.ResizeToContents
+        )
+        self.table.horizontalHeader().setSectionResizeMode(
+            3, QHeaderView.ResizeMode.ResizeToContents
+        )
         self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         self.table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         self.table.setShowGrid(False)
-        self.table.setStyleSheet("background-color: transparent; border: none; font-size: 11px;")
+        self.table.setStyleSheet(
+            "background-color: transparent; border: none; font-size: 11px;"
+        )
 
         # Populate empty placeholder rows
         for row in range(5):
             for col in range(4):
                 item = QTableWidgetItem("—")
-                item.setTextAlignment(Qt.AlignmentFlag.AlignVCenter | (Qt.AlignmentFlag.AlignLeft if col == 1 else Qt.AlignmentFlag.AlignCenter))
+                item.setTextAlignment(
+                    Qt.AlignmentFlag.AlignVCenter
+                    | (
+                        Qt.AlignmentFlag.AlignLeft
+                        if col == 1
+                        else Qt.AlignmentFlag.AlignCenter
+                    )
+                )
                 self.table.setItem(row, col, item)
 
         layout.addWidget(self.table)
 
     def update_snapshot(self, snapshot: Any) -> None:
         """Parse top process readings from snapshot and populate table."""
-        if not PYSIDE6_AVAILABLE or snapshot is None or not hasattr(snapshot, "readings"):
+        if (
+            not PYSIDE6_AVAILABLE
+            or snapshot is None
+            or not hasattr(snapshot, "readings")
+        ):
             return
 
         cpu_procs = []
@@ -92,7 +112,9 @@ class TopProcessesPreview(QFrame):
                 for col in range(4):
                     self._set_item(row, col, "—")
 
-    def _set_item(self, row: int, col: int, text: str, color: str | None = None) -> None:
+    def _set_item(
+        self, row: int, col: int, text: str, color: str | None = None
+    ) -> None:
         item = self.table.item(row, col)
         if item is not None:
             item.setText(text)

@@ -16,15 +16,62 @@ class TestOverviewView(unittest.TestCase):
         view = OverviewView(self.bridge)
 
         readings = [
-            MetricReading(metric="cpu.utilization.total", value=42.0, unit=MetricUnit.PERCENT, source="test"),
-            MetricReading(metric="cpu.frequency.current", value=3200 * 1e6, unit=MetricUnit.HERTZ, source="test"),
-            MetricReading(metric="cpu.model", value=0.0, unit=MetricUnit.INFO, source="test", tags={"model": "Apple M1 Max"}),
-            MetricReading(metric="memory.utilization", value=55.5, unit=MetricUnit.PERCENT, source="test"),
-            MetricReading(metric="memory.used_bytes", value=16 * (1024 ** 3), unit=MetricUnit.BYTES, source="test"),
-            MetricReading(metric="memory.total_bytes", value=32 * (1024 ** 3), unit=MetricUnit.BYTES, source="test"),
-            MetricReading(metric="thermal.cpu.temp", value=48.0, unit=MetricUnit.CELSIUS, source="test"),
-            MetricReading(metric="system.info.os_version", value=0.0, unit=MetricUnit.INFO, source="test", tags={"os": "macOS 15.0"}),
-            MetricReading(metric="system.uptime", value=7200.0, unit=MetricUnit.SECONDS, source="test"),
+            MetricReading(
+                metric="cpu.utilization.total",
+                value=42.0,
+                unit=MetricUnit.PERCENT,
+                source="test",
+            ),
+            MetricReading(
+                metric="cpu.frequency.current",
+                value=3200 * 1e6,
+                unit=MetricUnit.HERTZ,
+                source="test",
+            ),
+            MetricReading(
+                metric="cpu.model",
+                value=0.0,
+                unit=MetricUnit.INFO,
+                source="test",
+                tags={"model": "Apple M1 Max"},
+            ),
+            MetricReading(
+                metric="memory.utilization",
+                value=55.5,
+                unit=MetricUnit.PERCENT,
+                source="test",
+            ),
+            MetricReading(
+                metric="memory.used_bytes",
+                value=16 * (1024**3),
+                unit=MetricUnit.BYTES,
+                source="test",
+            ),
+            MetricReading(
+                metric="memory.total_bytes",
+                value=32 * (1024**3),
+                unit=MetricUnit.BYTES,
+                source="test",
+            ),
+            MetricReading(
+                metric="thermal.cpu.temp",
+                value=48.0,
+                unit=MetricUnit.CELSIUS,
+                source="test",
+            ),
+            MetricReading(
+                metric="system.info.os_version",
+                value=0.0,
+                unit=MetricUnit.INFO,
+                source="test",
+                tags={"os": "macOS 15.0"},
+            ),
+            MetricReading(
+                metric="system.uptime",
+                value=7200.0,
+                unit=MetricUnit.SECONDS,
+                source="test",
+            ),
         ]
         snap = Snapshot(timestamp=time.time(), readings=readings)
 

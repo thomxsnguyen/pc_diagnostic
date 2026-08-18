@@ -42,7 +42,9 @@ class TestTelemetryBridge(unittest.TestCase):
 
         self.bridge.snapshot_updated.connect(lambda s: received_snapshots.append(s))
         self.bridge.cache_health_changed.connect(lambda h: received_health.append(h))
-        self.bridge.collector_status_changed.connect(lambda st: received_status.append(st))
+        self.bridge.collector_status_changed.connect(
+            lambda st: received_status.append(st)
+        )
 
         reading = MetricReading(
             metric="memory.utilization",

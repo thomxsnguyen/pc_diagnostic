@@ -47,7 +47,9 @@ class TestThemeManager(unittest.TestCase):
             "QScrollBar:vertical",
         ]
         for sel in essential_selectors:
-            self.assertIn(sel, qss, f"Selector '{sel}' missing from generated stylesheet")
+            self.assertIn(
+                sel, qss, f"Selector '{sel}' missing from generated stylesheet"
+            )
 
 
 if __name__ == "__main__":

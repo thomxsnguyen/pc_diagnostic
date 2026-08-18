@@ -17,7 +17,6 @@ try:
     from PySide6.QtCore import Qt
     from PySide6.QtWidgets import (
         QFrame,
-        QGridLayout,
         QHBoxLayout,
         QLabel,
         QScrollArea,
@@ -109,7 +108,9 @@ class OverviewView(QWidget):
         # Uptime & Memory Total
         col2 = QVBoxLayout()
         self.lbl_uptime = QLabel("Uptime: —")
-        self.lbl_uptime.setStyleSheet("color: #F0F6FC; font-size: 12px; font-weight: 600;")
+        self.lbl_uptime.setStyleSheet(
+            "color: #F0F6FC; font-size: 12px; font-weight: 600;"
+        )
         self.lbl_mem_total = QLabel("Total RAM: —")
         self.lbl_mem_total.setStyleSheet("color: #90A4AE; font-size: 11px;")
         col2.addWidget(self.lbl_uptime)
@@ -129,7 +130,9 @@ class OverviewView(QWidget):
         self.cpu_gauge_card.setProperty("class", "card")
         cpu_layout = QVBoxLayout(self.cpu_gauge_card)
         cpu_layout.setContentsMargins(10, 10, 10, 10)
-        self.cpu_gauge = RadialGaugeWidget(title="CPU Load", unit="%", min_val=0, max_val=100)
+        self.cpu_gauge = RadialGaugeWidget(
+            title="CPU Load", unit="%", min_val=0, max_val=100
+        )
         cpu_layout.addWidget(self.cpu_gauge, alignment=Qt.AlignmentFlag.AlignCenter)
 
         # Memory Gauge Card
@@ -137,7 +140,9 @@ class OverviewView(QWidget):
         self.mem_gauge_card.setProperty("class", "card")
         mem_layout = QVBoxLayout(self.mem_gauge_card)
         mem_layout.setContentsMargins(10, 10, 10, 10)
-        self.mem_gauge = RadialGaugeWidget(title="Memory", unit="%", min_val=0, max_val=100)
+        self.mem_gauge = RadialGaugeWidget(
+            title="Memory", unit="%", min_val=0, max_val=100
+        )
         mem_layout.addWidget(self.mem_gauge, alignment=Qt.AlignmentFlag.AlignCenter)
 
         # GPU / Thermals Gauge Card
@@ -153,7 +158,9 @@ class OverviewView(QWidget):
             threshold_warning=75.0,
             threshold_critical=90.0,
         )
-        thermal_layout.addWidget(self.thermal_gauge, alignment=Qt.AlignmentFlag.AlignCenter)
+        thermal_layout.addWidget(
+            self.thermal_gauge, alignment=Qt.AlignmentFlag.AlignCenter
+        )
 
         row.addWidget(self.cpu_gauge_card)
         row.addWidget(self.mem_gauge_card)
@@ -192,17 +199,22 @@ class OverviewView(QWidget):
                 self.cpu_gauge.set_value(r.value)
             elif r.metric == "cpu.frequency.current":
                 cpu_freq_mhz = r.value / 1e6 if r.value > 1e4 else r.value
-                self.cpu_gauge.set_value(self.cpu_gauge.value, subtitle=f"{cpu_freq_mhz:.0f} MHz")
+                self.cpu_gauge.set_value(
+                    self.cpu_gauge.value, subtitle=f"{cpu_freq_mhz:.0f} MHz"
+                )
             elif r.metric == "cpu.model":
-                self.lbl_cpu_model.setText(f"CPU: {r.tags.get('model', 'Generic CPU') if r.tags else 'Generic CPU'}")
+                model_str = (
+                    r.tags.get("model", "Generic CPU") if r.tags else "Generic CPU"
+                )
+                self.lbl_cpu_model.setText(f"CPU: {model_str}")
 
             # Memory
             elif r.metric == "memory.utilization":
                 self.mem_gauge.set_value(r.value)
             elif r.metric == "memory.used_bytes":
-                ram_used_gb = r.value / (1024.0 ** 3)
+                ram_used_gb = r.value / (1024.0**3)
             elif r.metric == "memory.total_bytes":
-                ram_total_gb = r.value / (1024.0 ** 3)
+                ram_total_gb = r.value / (1024.0**3)
                 self.lbl_mem_total.setText(f"Total RAM: {ram_total_gb:.1f} GB")
 
             # Thermals / GPU
@@ -211,7 +223,10 @@ class OverviewView(QWidget):
 
             # System Info
             elif r.metric == "system.info.os_version":
-                self.lbl_os.setText(f"OS: {r.tags.get('os', 'macOS / Windows') if r.tags else 'macOS / Windows'}")
+                os_str = (
+                    r.tags.get("os", "macOS / Windows") if r.tags else "macOS / Windows"
+                )
+                self.lbl_os.setText(f"OS: {os_str}")
             elif r.metric == "system.uptime":
                 hours = int(r.value // 3600)
                 mins = int((r.value % 3600) // 60)

@@ -21,10 +21,12 @@ class TestGuiApp(unittest.TestCase):
 
         from PySide6.QtWidgets import QApplication
 
-        app = QApplication.instance() or QApplication([])
+        _app = QApplication.instance() or QApplication([])
         window = MainWindow(self.bridge, self.theme_manager)
 
-        self.assertEqual(window.windowTitle(), "PC Diagnostic — Telemetry & AI Diagnostic Monitor")
+        self.assertEqual(
+            window.windowTitle(), "PC Diagnostic — Telemetry & AI Diagnostic Monitor"
+        )
         self.assertEqual(window.stack.count(), 6)
 
         # Test switching views
@@ -39,7 +41,9 @@ class TestGuiApp(unittest.TestCase):
         self.assertIn("STALE", window.status_badge.text())
 
         # Test cache health updates
-        window._on_cache_health(CacheHealth(size=42, max_size=300, age_s=0.5))
+        window._on_cache_health(
+            CacheHealth(size=42, max_size=300, last_updated=100.0, age_s=0.5)
+        )
         self.assertEqual(window.cache_badge.text(), "Cache: 42/300")
 
 
