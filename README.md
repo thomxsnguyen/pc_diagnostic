@@ -144,6 +144,8 @@ Comprehensive technical documentation is maintained in the [`docs/`](docs/) dire
 - [Alerting Subsystem](docs/alerting.md) — Alert rules, incident state machine, debounce, hysteresis, and dispatching.
 - [AI Diagnostics Engine](docs/diagnostics.md) — CrewAI integration, local fallback analyzer, and evidence schema.
 - [Build & Packaging](docs/build_and_packaging.md) — PyInstaller pipelines, C helper auto-compilation, and macOS signing.
+- [Configuration & Environment](docs/configuration.md) — Single source of truth for env vars, logs, and alert thresholds.
+- [Sensor Permissions & Troubleshooting](docs/troubleshooting.md) — Resolves hardware sensor quirks (macOS/Windows) and fallbacks.
 - [Desktop UI Architecture](docs/ui_architecture.md) — Architectural design for transitioning to a Desktop GUI application.
 - [UI Implementation Plan](docs/implementation/ui_implementation_plan.md) — Phased engineering plan for the GUI software.
 
