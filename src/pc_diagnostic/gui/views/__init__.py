@@ -37,56 +37,7 @@ class BaseView(QWidget):
         pass
 
 
-class OverviewView(BaseView):
-    """System Overview Dashboard View (Phase 2)."""
-
-    def _init_ui(self) -> None:
-        if not PYSIDE6_AVAILABLE:
-            return
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(20, 20, 20, 20)
-        layout.setSpacing(16)
-
-        # Header Title
-        title = QLabel("System Overview Dashboard")
-        title.setProperty("class", "card_title")
-        title.setStyleSheet("font-size: 18px; font-weight: 800;")
-        layout.addWidget(title)
-
-        # Overview Card Container
-        card = QFrame()
-        card.setProperty("class", "card")
-        card_layout = QVBoxLayout(card)
-
-        subtitle = QLabel("Real-time telemetry and resource performance summary")
-        subtitle.setProperty("class", "card_subtitle")
-        card_layout.addWidget(subtitle)
-
-        # Live Metric Preview Row
-        preview_layout = QHBoxLayout()
-        self.lbl_cpu = QLabel("CPU: Connecting...")
-        self.lbl_cpu.setStyleSheet("font-size: 16px; font-weight: 700;")
-        self.lbl_ram = QLabel("RAM: Connecting...")
-        self.lbl_ram.setStyleSheet("font-size: 16px; font-weight: 700;")
-        preview_layout.addWidget(self.lbl_cpu)
-        preview_layout.addWidget(self.lbl_ram)
-        preview_layout.addStretch()
-
-        card_layout.addLayout(preview_layout)
-        layout.addWidget(card)
-        layout.addStretch()
-
-        # Connect bridge signal
-        self.bridge.snapshot_updated.connect(self._on_snapshot)
-
-    def _on_snapshot(self, snapshot: Any) -> None:
-        if not PYSIDE6_AVAILABLE or snapshot is None:
-            return
-        for r in snapshot.readings:
-            if r.metric == "cpu.utilization.total":
-                self.lbl_cpu.setText(f"CPU Total: {r.value:.1f}%")
-            elif r.metric == "memory.utilization":
-                self.lbl_ram.setText(f"Memory: {r.value:.1f}%")
+from pc_diagnostic.gui.views.overview_view import OverviewView
 
 
 class SensorsView(BaseView):
