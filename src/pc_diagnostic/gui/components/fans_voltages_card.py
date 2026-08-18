@@ -47,9 +47,7 @@ class FansVoltagesCard(QFrame):
 
         # --- Section A: Fans ---
         lbl_fans_hdr = QLabel("Cooling Fans")
-        lbl_fans_hdr.setStyleSheet(
-            "font-weight: 700; color: #F0F6FC; font-size: 12px;"
-        )
+        lbl_fans_hdr.setStyleSheet("font-weight: 700; color: #F0F6FC; font-size: 12px;")
         layout.addWidget(lbl_fans_hdr)
 
         self.fans_container = QVBoxLayout()
@@ -113,9 +111,8 @@ class FansVoltagesCard(QFrame):
                 if r.tags:
                     fan_name = r.tags.get("fan") or r.tags.get("sensor") or r.metric
                 else:
-                    fan_name = (
-                        r.metric.replace("system.fan.speed", "Fan")
-                        .replace("fan.speed.", "Fan ")
+                    fan_name = r.metric.replace("system.fan.speed", "Fan").replace(
+                        "fan.speed.", "Fan "
                     )
                 key = f"{r.metric}:{fan_name}"
                 rpm = float(r.value)
