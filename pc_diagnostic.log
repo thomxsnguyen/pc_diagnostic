@@ -62,3 +62,8 @@
 2026-07-16 21:58:56,703 [INFO] pc_diagnostic.collector: Stopping collector thread...
 2026-07-16 21:58:56,703 [INFO] pc_diagnostic.collector: Collector thread stopped.
 2026-07-16 21:58:56,703 [INFO] pc_diagnostic: PC Diagnostic stopped.
+2026-08-17 22:14:30,276 [INFO] pc_diagnostic: Initializing PC Diagnostic...
+2026-08-17 22:14:30,282 [INFO] pc_diagnostic.providers.smc_provider: Compiling native SMC helper source: /Users/thomas/Projects/pc_diagnostic/src/pc_diagnostic/providers/smc_helper.c
+2026-08-17 22:14:31,836 [INFO] pc_diagnostic.providers.smc_provider: Successfully compiled native macOS SMC helper.
+2026-08-17 22:14:31,836 [INFO] pc_diagnostic: Registered providers: ['psutil', 'smc']
+2026-08-17 22:14:31,837 [INFO] pc_diagnostic.collector: Collector thread started.

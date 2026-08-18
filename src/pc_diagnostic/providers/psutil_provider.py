@@ -3,7 +3,10 @@ import platform
 import subprocess
 import time
 
-import psutil  # type: ignore[import-untyped]
+try:
+    import psutil  # type: ignore[import-untyped]
+except ImportError:
+    psutil = None
 
 from pc_diagnostic.models import MetricReading, MetricUnit
 from pc_diagnostic.providers.base import Provider
@@ -24,11 +27,14 @@ class PsutilProvider(Provider):
         self._processes: dict[int, psutil.Process] = {}  # pid -> Process object
 
         # Load static specs once
-        self._cpu_model = self._get_cpu_model()
+        self._cpu_model = self._get_cpu_model() if psutil is not None else "Generic CPU"
         self._os_version = self._get_os_version()
-        try:
-            self._total_memory = psutil.virtual_memory().total
-        except Exception:
+        if psutil is not None:
+            try:
+                self._total_memory = psutil.virtual_memory().total
+            except Exception:
+                self._total_memory = 0
+        else:
             self._total_memory = 0
 
     @property
@@ -36,7 +42,7 @@ class PsutilProvider(Provider):
         return "psutil"
 
     def available(self) -> bool:
-        return True
+        return psutil is not None
 
     def read(self) -> list[MetricReading]:
         readings: list[MetricReading] = []
