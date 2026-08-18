@@ -89,20 +89,41 @@ class ThermalMatrixWidget(QFrame):
         self, metric: str, tags: dict[str, str]
     ) -> tuple[str, str]:
         """Categorize sensor into Group (CPU, GPU, Storage, System) and name."""
-        name = (
-            tags.get("name")
-            or tags.get("sensor")
-            or metric.replace("thermal.", "").replace("_", " ").title()
-        )
+        sensor_tag = tags.get("sensor") or tags.get("name")
+        if sensor_tag:
+            name = sensor_tag
+        else:
+            name = (
+                metric.replace("system.temperature.", "")
+                .replace("thermal.", "")
+                .replace("_", " ")
+                .title()
+            )
 
-        if "gpu" in metric.lower() or "gpu" in name.lower():
+        metric_lower = metric.lower()
+        name_lower = name.lower()
+
+        if "gpu" in metric_lower or "gpu" in name_lower or "tdev" in name_lower:
             group = "GPU"
-        elif "cpu" in metric.lower() or "core" in name.lower() or "pmu" in name.lower():
+        elif (
+            "cpu" in metric_lower
+            or "core" in name_lower
+            or "pmu" in name_lower
+            or "tdie" in name_lower
+            or "tcal" in name_lower
+            or "soc" in name_lower
+        ):
             group = "CPU"
         elif (
-            "disk" in metric.lower() or "ssd" in name.lower() or "drive" in name.lower()
+            "disk" in metric_lower
+            or "ssd" in name_lower
+            or "drive" in name_lower
+            or "nand" in name_lower
+            or "storage" in metric_lower
         ):
             group = "Storage"
+        elif "battery" in name_lower or "battery" in metric_lower:
+            group = "Battery"
         else:
             group = "System"
 
@@ -118,10 +139,16 @@ class ThermalMatrixWidget(QFrame):
             return
 
         for r in snapshot.readings:
-            if not r.metric.startswith("thermal."):
+            is_thermal = (
+                r.metric.startswith("thermal.")
+                or r.metric.startswith("system.temperature.")
+                or (hasattr(r, "unit") and getattr(r.unit, "name", "") == "CELSIUS")
+            )
+            if not is_thermal:
                 continue
 
-            metric_key = r.metric
+            sensor_id = r.tags.get("sensor") if r.tags else None
+            metric_key = f"{r.metric}:{sensor_id}" if sensor_id else r.metric
             val = float(r.value)
             tags = r.tags if r.tags else {}
 

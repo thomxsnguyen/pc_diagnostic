@@ -96,7 +96,12 @@ class FansVoltagesCard(QFrame):
         voltage_readings = []
 
         for r in snapshot.readings:
-            if r.metric.startswith("fan.speed") or "fan" in r.metric:
+            is_fan = (
+                r.metric.startswith("fan.speed")
+                or "fan" in r.metric
+                or (hasattr(r, "unit") and getattr(r.unit, "name", "") == "RPM")
+            )
+            if is_fan:
                 fan_readings.append(r)
             elif r.metric.startswith("voltage."):
                 voltage_readings.append(r)
@@ -105,13 +110,15 @@ class FansVoltagesCard(QFrame):
         if fan_readings:
             self.lbl_no_fans.setVisible(False)
             for r in fan_readings:
-                key = r.metric
+                if r.tags:
+                    fan_name = r.tags.get("fan") or r.tags.get("sensor") or r.metric
+                else:
+                    fan_name = (
+                        r.metric.replace("system.fan.speed", "Fan")
+                        .replace("fan.speed.", "Fan ")
+                    )
+                key = f"{r.metric}:{fan_name}"
                 rpm = float(r.value)
-                fan_name = (
-                    r.tags.get("fan", key.replace("fan.speed.", "Fan "))
-                    if r.tags
-                    else key
-                )
 
                 if key not in self._fans:
                     row_layout = QHBoxLayout()
@@ -141,6 +148,7 @@ class FansVoltagesCard(QFrame):
                     row_layout.addWidget(lbl_val, alignment=Qt.AlignmentFlag.AlignRight)
                     self.fans_container.addLayout(row_layout)
                     self._fans[key] = (lbl_val, bar)
+                    self._fans[r.metric] = (lbl_val, bar)
                 else:
                     lbl_val, bar = self._fans[key]
                     lbl_val.setText(f"{rpm:.0f} RPM")

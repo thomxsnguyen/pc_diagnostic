@@ -139,6 +139,16 @@ class PerCoreGridWidget(QFrame):
                     core_readings.append((core_idx, r.value))
                 except (ValueError, IndexError):
                     continue
+            elif (
+                r.metric in ["cpu.utilization.per_core", "cpu.utilization.core"]
+                and r.tags
+                and "core" in r.tags
+            ):
+                try:
+                    core_idx = int(r.tags["core"])
+                    core_readings.append((core_idx, r.value))
+                except (ValueError, TypeError):
+                    continue
 
         if not core_readings:
             return

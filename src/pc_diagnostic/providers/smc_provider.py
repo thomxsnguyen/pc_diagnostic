@@ -20,28 +20,21 @@ class SmcProvider(Provider):
     SENSOR_MAP: ClassVar[dict[str, str]] = {
         # CPU Die / Core temps (Intel & Apple Silicon PMU)
         "cpu die temperature": "system.temperature.cpu",
+        "pmu tcal": "system.temperature.cpu",
+        "pmu2 tcal": "system.temperature.cpu",
+        "soc die temperature": "system.temperature.cpu",
+        **{f"pmu tdie{i}": "system.temperature.cpu" for i in range(1, 17)},
+        **{f"pmu2 tdie{i}": "system.temperature.cpu" for i in range(1, 17)},
         "pmu tdie": "system.temperature.cpu",
-        "pmu tdie1": "system.temperature.cpu",
-        "pmu tdie2": "system.temperature.cpu",
-        "pmu tdie3": "system.temperature.cpu",
-        "pmu tdie4": "system.temperature.cpu",
-        "pmu tdie5": "system.temperature.cpu",
-        "pmu tdie6": "system.temperature.cpu",
-        "pmu tdie7": "system.temperature.cpu",
-        "pmu tdie8": "system.temperature.cpu",
-        "pmu tdie9": "system.temperature.cpu",
-        "pmu tdie10": "system.temperature.cpu",
         # GPU / Dev thermal zones
         "gpu die temperature": "system.temperature.gpu",
+        **{f"pmu tdev{i}": "system.temperature.gpu" for i in range(1, 17)},
+        **{f"pmu2 tdev{i}": "system.temperature.gpu" for i in range(1, 17)},
         "pmu tdev": "system.temperature.gpu",
-        "pmu tdev1": "system.temperature.gpu",
-        "pmu tdev2": "system.temperature.gpu",
-        "pmu tdev3": "system.temperature.gpu",
-        "pmu tdev4": "system.temperature.gpu",
-        "pmu tdev5": "system.temperature.gpu",
-        "pmu tdev6": "system.temperature.gpu",
-        "pmu tdev7": "system.temperature.gpu",
-        "pmu tdev8": "system.temperature.gpu",
+        # Storage & Battery thermals
+        "nand ch0 temp": "system.temperature.storage",
+        "nand ch1 temp": "system.temperature.storage",
+        "gas gauge battery": "system.temperature.battery",
     }
 
     def __init__(self) -> None:

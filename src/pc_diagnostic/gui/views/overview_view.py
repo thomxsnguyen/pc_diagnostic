@@ -218,8 +218,12 @@ class OverviewView(QWidget):
                 self.lbl_mem_total.setText(f"Total RAM: {ram_total_gb:.1f} GB")
 
             # Thermals / GPU
-            elif r.metric in ["thermal.cpu.temp", "thermal.cpu.package_temp"]:
-                self.thermal_gauge.set_value(r.value, subtitle="Package")
+            elif r.metric in [
+                "thermal.cpu.temp",
+                "thermal.cpu.package_temp",
+                "system.temperature.cpu",
+            ]:
+                self.thermal_gauge.set_value(r.value, subtitle="CPU Die / Package")
 
             # System Info
             elif r.metric == "system.info.os_version":
