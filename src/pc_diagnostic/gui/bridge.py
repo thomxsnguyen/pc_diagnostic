@@ -1,7 +1,11 @@
 from __future__ import annotations
 
 import logging
+import time
 from typing import TYPE_CHECKING, Any
+
+from pc_diagnostic.alerts.evaluator import AlertEvaluator
+from pc_diagnostic.alerts.models import DEFAULT_ALERT_RULES, AlertRule
 
 if TYPE_CHECKING:
     from pc_diagnostic.alerts.dispatcher import AlertDispatcher
@@ -46,6 +50,7 @@ class TelemetryBridge(QObject):
 
     snapshot_updated = Signal(object)
     alert_triggered = Signal(object)
+    active_alerts_count_changed = Signal(int)
     cache_health_changed = Signal(object)
     collector_status_changed = Signal(bool)
     diagnosis_completed = Signal(str)
@@ -54,11 +59,13 @@ class TelemetryBridge(QObject):
         self,
         cache: RollingCache,
         dispatcher: AlertDispatcher | None = None,
+        evaluator: AlertEvaluator | None = None,
         parent: Any = None,
     ) -> None:
         super().__init__(parent)
         self._cache = cache
         self._dispatcher = dispatcher
+        self._evaluator = evaluator or AlertEvaluator(list(DEFAULT_ALERT_RULES))
         self._timer: Any = None
         self._is_active: bool = False
         self._last_snapshot_ts: float = 0.0
@@ -74,6 +81,10 @@ class TelemetryBridge(QObject):
     @property
     def dispatcher(self) -> AlertDispatcher | None:
         return self._dispatcher
+
+    @property
+    def evaluator(self) -> AlertEvaluator:
+        return self._evaluator
 
     def start(self, interval_ms: int = 1000) -> None:
         """Start the periodic UI state synchronization timer."""
@@ -91,9 +102,59 @@ class TelemetryBridge(QObject):
             self._timer.stop()
         logger.debug("TelemetryBridge stopped")
 
+    def update_rule_threshold(
+        self,
+        rule_id: str,
+        threshold: float,
+        duration_s: float | None = None,
+        hysteresis_offset: float | None = None,
+    ) -> None:
+        """Dynamically update an alert rule configuration in the evaluator."""
+        updated_rules: list[AlertRule] = []
+        for rule in self._evaluator.rules:
+            if rule.id == rule_id:
+                new_rule = AlertRule(
+                    id=rule.id,
+                    metric=rule.metric,
+                    condition=rule.condition,
+                    threshold=threshold,
+                    duration_s=duration_s
+                    if duration_s is not None
+                    else rule.duration_s,
+                    hysteresis_offset=(
+                        hysteresis_offset
+                        if hysteresis_offset is not None
+                        else rule.hysteresis_offset
+                    ),
+                    cooldown_s=rule.cooldown_s,
+                )
+                updated_rules.append(new_rule)
+                if rule_id in self._evaluator.incidents:
+                    self._evaluator.incidents[rule_id].rule = new_rule
+            else:
+                updated_rules.append(rule)
+        self._evaluator.rules = updated_rules
+
+        # Trigger immediate re-evaluation against latest snapshot
+        latest = self._cache.latest()
+        if latest is not None:
+            now = time.time()
+            health = self._cache.health()
+            transitions = self._evaluator.evaluate(latest, health.age_s, now)
+            for incident, _old_state, _new_state in transitions:
+                self.alert_triggered.emit(incident)
+
+            firing_count = sum(
+                1
+                for inc in self._evaluator.incidents.values()
+                if hasattr(inc.state, "name") and inc.state.name == "FIRING"
+            )
+            self.active_alerts_count_changed.emit(firing_count)
+
     def _on_tick(self) -> None:
         """Internal timer callback executing on the Qt main UI thread."""
         try:
+            now = time.time()
             # 1. Fetch latest snapshot
             latest_snap = self._cache.latest()
             if latest_snap is not None:
@@ -107,6 +168,19 @@ class TelemetryBridge(QObject):
             # 3. Determine and emit collector active/stale status
             is_healthy = health.age_s <= 2.0
             self.collector_status_changed.emit(is_healthy)
+
+            # 4. Evaluate alert transitions
+            if latest_snap is not None:
+                transitions = self._evaluator.evaluate(latest_snap, health.age_s, now)
+                for incident, _old_state, _new_state in transitions:
+                    self.alert_triggered.emit(incident)
+
+                firing_count = sum(
+                    1
+                    for inc in self._evaluator.incidents.values()
+                    if hasattr(inc.state, "name") and inc.state.name == "FIRING"
+                )
+                self.active_alerts_count_changed.emit(firing_count)
 
         except Exception as e:
             logger.exception(f"Error during TelemetryBridge tick: {e}")

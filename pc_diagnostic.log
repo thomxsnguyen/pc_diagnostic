@@ -85,3 +85,9 @@
 2026-08-17 22:37:03,279 [INFO] pc_diagnostic: Initializing PC Diagnostic...
 2026-08-17 22:37:03,281 [INFO] pc_diagnostic: Registered providers: ['psutil', 'smc']
 2026-08-17 22:37:03,282 [INFO] pc_diagnostic.collector: Collector thread started.
+2026-08-17 22:43:25,808 [INFO] pc_diagnostic: Initializing PC Diagnostic...
+2026-08-17 22:43:25,814 [INFO] pc_diagnostic: Registered providers: ['psutil', 'smc']
+2026-08-17 22:43:25,814 [INFO] pc_diagnostic.collector: Collector thread started.
+2026-08-17 22:44:07,027 [INFO] pc_diagnostic.collector: Stopping collector thread...
+2026-08-17 22:44:07,055 [INFO] pc_diagnostic.collector: Collector thread stopped.
+2026-08-17 22:44:07,055 [INFO] pc_diagnostic: PC Diagnostic stopped.

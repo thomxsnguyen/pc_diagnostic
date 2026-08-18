@@ -227,18 +227,54 @@ class AlertsView(QWidget):
     def _on_cpu_slider_changed(self, val: int) -> None:
         self.cpu_threshold = float(val)
         self.lbl_cpu_val.setText(f"{val}%")
+        self.bridge.update_rule_threshold(
+            "high_cpu",
+            threshold=self.cpu_threshold,
+            duration_s=self.debounce_s,
+            hysteresis_offset=self.hysteresis,
+        )
 
     def _on_mem_slider_changed(self, val: int) -> None:
         self.mem_threshold = float(val)
         self.lbl_mem_val.setText(f"{val}%")
+        self.bridge.update_rule_threshold(
+            "high_memory",
+            threshold=self.mem_threshold,
+            duration_s=self.debounce_s,
+            hysteresis_offset=self.hysteresis,
+        )
 
     def _on_debounce_slider_changed(self, val: int) -> None:
         self.debounce_s = float(val)
         self.lbl_debounce_val.setText(f"{val}s")
+        self.bridge.update_rule_threshold(
+            "high_cpu",
+            threshold=self.cpu_threshold,
+            duration_s=self.debounce_s,
+            hysteresis_offset=self.hysteresis,
+        )
+        self.bridge.update_rule_threshold(
+            "high_memory",
+            threshold=self.mem_threshold,
+            duration_s=self.debounce_s,
+            hysteresis_offset=self.hysteresis,
+        )
 
     def _on_hysteresis_slider_changed(self, val: int) -> None:
         self.hysteresis = float(val)
         self.lbl_hysteresis_val.setText(f"{val}%")
+        self.bridge.update_rule_threshold(
+            "high_cpu",
+            threshold=self.cpu_threshold,
+            duration_s=self.debounce_s,
+            hysteresis_offset=self.hysteresis,
+        )
+        self.bridge.update_rule_threshold(
+            "high_memory",
+            threshold=self.mem_threshold,
+            duration_s=self.debounce_s,
+            hysteresis_offset=self.hysteresis,
+        )
 
     def _clear_incidents(self) -> None:
         """Clear historical entries in the incident table."""

@@ -192,10 +192,28 @@ class MainWindow(QMainWindow):
         """Connect TelemetryBridge signals to header indicators."""
         self.bridge.collector_status_changed.connect(self._on_collector_status)
         self.bridge.cache_health_changed.connect(self._on_cache_health)
+        self.bridge.active_alerts_count_changed.connect(self._on_alerts_count)
 
     def _switch_view(self, index: int) -> None:
         """Switch active stacked view."""
         self.stack.setCurrentIndex(index)
+
+    def _on_alerts_count(self, count: int) -> None:
+        """Update active alerts count indicator badge."""
+        if count > 0:
+            self.alert_badge.setText(
+                f"🚨 {count} Active Alert{'s' if count > 1 else ''}"
+            )
+            self.alert_badge.setStyleSheet(
+                "background-color: #FF1744; color: #FFFFFF; font-weight: 700; "
+                "border-radius: 4px; padding: 2px 8px; font-size: 11px;"
+            )
+        else:
+            self.alert_badge.setText("🚨 0 Alerts")
+            self.alert_badge.setStyleSheet(
+                "background-color: #1C2536; color: #90A4AE; font-weight: 600; "
+                "border-radius: 4px; padding: 2px 8px; font-size: 11px;"
+            )
 
     def _on_collector_status(self, is_healthy: bool) -> None:
         """Update the header collector status badge."""

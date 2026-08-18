@@ -74,6 +74,8 @@ class CoreCell(QWidget):
             chunk_color = "#00E5FF"
 
         style = (
+            "QProgressBar { border: none; background-color: #151C29; "
+            "border-radius: 2px; } "
             f"QProgressBar::chunk {{ background-color: {chunk_color}; "
             "border-radius: 2px; }}"
         )

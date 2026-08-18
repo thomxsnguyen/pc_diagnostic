@@ -70,6 +70,12 @@ class TestTelemetryBridge(unittest.TestCase):
 
         self.assertEqual(received_reports, ["# Diagnosis Report"])
 
+    def test_bridge_update_rule_threshold(self) -> None:
+        self.bridge.update_rule_threshold("high_memory", threshold=50.0, duration_s=1.0)
+        rule = next(r for r in self.bridge.evaluator.rules if r.id == "high_memory")
+        self.assertEqual(rule.threshold, 50.0)
+        self.assertEqual(rule.duration_s, 1.0)
+
 
 if __name__ == "__main__":
     unittest.main()
