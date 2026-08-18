@@ -8,11 +8,14 @@ dependencies = [
     "psutil>=5.9.0",
     "rich>=13.0.0",
     "crewai>=0.1.0",
+    "PySide6>=6.6.0",
+    "pyqtgraph>=0.13.3",
 ]
 
 [dependency-groups]
 dev = [
     "pytest>=8.0.0",
+    "pytest-qt>=4.3.0",
     "ruff>=0.3.0",
     "mypy>=1.8.0",
     "pyinstaller>=6.0.0",
