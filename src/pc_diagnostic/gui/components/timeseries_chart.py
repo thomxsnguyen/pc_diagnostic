@@ -35,14 +35,14 @@ class TimeSeriesChart(QWidget):
         self._series: dict[str, dict[str, Any]] = {
             "cpu.utilization.total": {
                 "label": "CPU Load (%)",
-                "color": QColor("#00E5FF") if PYSIDE6_AVAILABLE else None,
+                "color": QColor("#60A5FA") if PYSIDE6_AVAILABLE else None,
                 "values": deque(maxlen=maxlen),
                 "visible": True,
                 "max_scale": 100.0,
             },
             "memory.utilization": {
                 "label": "Memory (%)",
-                "color": QColor("#64B5F6") if PYSIDE6_AVAILABLE else None,
+                "color": QColor("#A6ABB3") if PYSIDE6_AVAILABLE else None,
                 "values": deque(maxlen=maxlen),
                 "visible": True,
                 "max_scale": 100.0,
@@ -64,9 +64,9 @@ class TimeSeriesChart(QWidget):
         }
 
         # Styling colors
-        self._color_bg = QColor("#111622") if PYSIDE6_AVAILABLE else None
-        self._color_grid = QColor("#1E2738") if PYSIDE6_AVAILABLE else None
-        self._color_text = QColor("#607D8B") if PYSIDE6_AVAILABLE else None
+        self._color_bg = QColor("#101114") if PYSIDE6_AVAILABLE else None
+        self._color_grid = QColor("#24272D") if PYSIDE6_AVAILABLE else None
+        self._color_text = QColor("#6F7680") if PYSIDE6_AVAILABLE else None
 
     def add_point(self, metric: str, value: float) -> None:
         """Append a data point to a specific series buffer."""

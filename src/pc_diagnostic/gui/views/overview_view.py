@@ -99,9 +99,9 @@ class OverviewView(QWidget):
         # OS & Host
         col1 = QVBoxLayout()
         self.lbl_os = QLabel("OS: Detecting...")
-        self.lbl_os.setStyleSheet("font-weight: 700; font-size: 13px; color: #F0F6FC;")
+        self.lbl_os.setStyleSheet("font-weight: 700; font-size: 13px; color: #ECEEF1;")
         self.lbl_cpu_model = QLabel("CPU: Detecting...")
-        self.lbl_cpu_model.setStyleSheet("color: #90A4AE; font-size: 11px;")
+        self.lbl_cpu_model.setStyleSheet("color: #A6ABB3; font-size: 11px;")
         col1.addWidget(self.lbl_os)
         col1.addWidget(self.lbl_cpu_model)
 
@@ -109,10 +109,10 @@ class OverviewView(QWidget):
         col2 = QVBoxLayout()
         self.lbl_uptime = QLabel("Uptime: —")
         self.lbl_uptime.setStyleSheet(
-            "color: #F0F6FC; font-size: 12px; font-weight: 600;"
+            "color: #ECEEF1; font-size: 12px; font-weight: 600;"
         )
         self.lbl_mem_total = QLabel("Total RAM: —")
-        self.lbl_mem_total.setStyleSheet("color: #90A4AE; font-size: 11px;")
+        self.lbl_mem_total.setStyleSheet("color: #A6ABB3; font-size: 11px;")
         col2.addWidget(self.lbl_uptime)
         col2.addWidget(self.lbl_mem_total)
 
@@ -177,7 +177,7 @@ class OverviewView(QWidget):
 
         title = QLabel("REAL-TIME TELEMETRY STREAM (60s)")
         title.setProperty("class", "card_title")
-        title.setStyleSheet("font-size: 13px; font-weight: 700; color: #90A4AE;")
+        title.setStyleSheet("font-size: 13px; font-weight: 700; color: #A6ABB3;")
         layout.addWidget(title)
 
         self.chart = TimeSeriesChart(maxlen=60, parent=self)

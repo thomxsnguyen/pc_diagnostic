@@ -145,7 +145,7 @@ src/pc_diagnostic/
    - Run a 30–60 FPS UI refresh timer pulling from `cache.latest()` and `cache.series()`.
 2. **Implement Theme & Styling Engine (`src/pc_diagnostic/gui/theme.py`):**
    - Palette definitions:
-     - **OLED Stealth:** Pure `#000000` with blue and light-blue accents.
+     - **OLED Stealth:** Black and charcoal-gray surfaces with restrained blue accents.
      - **Clean Light:** `#F6F8FA` background, `#FFFFFF` cards, `#0969DA` accent.
    - Global QSS stylesheet with glassmorphism, border radii, smooth hover transitions, and custom scrollbars.
 3. **Build Main Application Window (`src/pc_diagnostic/gui/app.py`):**

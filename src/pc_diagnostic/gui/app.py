@@ -212,7 +212,7 @@ class MainWindow(QMainWindow):
         else:
             self.alert_badge.setText("0 Alerts")
             self.alert_badge.setStyleSheet(
-                "background-color: #1C2536; color: #90A4AE; font-weight: 600; "
+                "background-color: #1C1F24; color: #A6ABB3; font-weight: 600; "
                 "border-radius: 4px; padding: 2px 8px; font-size: 11px;"
             )
 

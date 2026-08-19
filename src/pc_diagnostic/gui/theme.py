@@ -39,25 +39,25 @@ class ThemeTokens:
 
 OLED_STEALTH = ThemeTokens(
     name="OLED Stealth",
-    bg_window="#000000",
-    bg_sidebar="#050505",
-    bg_header="#0A0A0A",
-    bg_card="#0D0D0D",
-    bg_card_hover="#171717",
-    bg_input="#050505",
-    border_subtle="#1F1F1F",
-    border_card="#262626",
-    border_accent="#2196F3",
-    text_primary="#FFFFFF",
-    text_secondary="#A3A3A3",
-    text_muted="#525252",
-    accent_primary="#2196F3",
-    accent_secondary="#64B5F6",
-    accent_glow="rgba(33, 150, 243, 0.14)",
-    status_normal="#00FF66",
-    status_warning="#FFB703",
-    status_critical="#FF0055",
-    status_info="#00E5FF",
+    bg_window="#0B0C0E",
+    bg_sidebar="#101114",
+    bg_header="#121417",
+    bg_card="#15171B",
+    bg_card_hover="#1C1F24",
+    bg_input="#0F1013",
+    border_subtle="#24272D",
+    border_card="#30343B",
+    border_accent="#3B82F6",
+    text_primary="#ECEEF1",
+    text_secondary="#A6ABB3",
+    text_muted="#6F7680",
+    accent_primary="#3B82F6",
+    accent_secondary="#93C5FD",
+    accent_glow="rgba(59, 130, 246, 0.08)",
+    status_normal="#34C759",
+    status_warning="#F5A524",
+    status_critical="#F05252",
+    status_info="#60A5FA",
 )
 
 CLEAN_LIGHT = ThemeTokens(
@@ -176,22 +176,22 @@ class ThemeManager:
         }}
 
         QPushButton.nav_button:checked, QPushButton.nav_button[active="true"] {{
-            background-color: {t.accent_glow};
+            background-color: {t.bg_card_hover};
             color: {t.accent_primary};
-            border-left: 3px solid {t.accent_primary};
+            border-left: 2px solid {t.accent_primary};
             font-weight: 700;
         }}
 
-        /* --- Glassmorphic Card Containers --- */
+        /* --- Card Containers --- */
         QFrame.card {{
             background-color: {t.bg_card};
             border: 1px solid {t.border_card};
-            border-radius: 10px;
+            border-radius: 6px;
             padding: 16px;
         }}
 
         QFrame.card:hover {{
-            border: 1px solid {t.border_accent};
+            border: 1px solid {t.border_card};
         }}
 
         QLabel.card_title {{
@@ -215,10 +215,10 @@ class ThemeManager:
 
         /* --- Status Indicators & Badges --- */
         QLabel.status_active {{
-            background-color: rgba(0, 230, 118, 0.15);
+            background-color: {t.bg_card_hover};
             color: {t.status_normal};
-            border: 1px solid {t.status_normal};
-            border-radius: 12px;
+            border: 1px solid {t.border_card};
+            border-radius: 4px;
             padding: 3px 10px;
             font-size: 11px;
             font-weight: 700;
@@ -226,10 +226,10 @@ class ThemeManager:
         }}
 
         QLabel.status_stale {{
-            background-color: rgba(255, 23, 68, 0.15);
+            background-color: {t.bg_card_hover};
             color: {t.status_critical};
-            border: 1px solid {t.status_critical};
-            border-radius: 12px;
+            border: 1px solid {t.border_card};
+            border-radius: 4px;
             padding: 3px 10px;
             font-size: 11px;
             font-weight: 700;
@@ -237,10 +237,10 @@ class ThemeManager:
         }}
 
         QLabel.alert_badge {{
-            background-color: rgba(255, 214, 0, 0.15);
+            background-color: {t.bg_card_hover};
             color: {t.status_warning};
-            border: 1px solid {t.status_warning};
-            border-radius: 10px;
+            border: 1px solid {t.border_card};
+            border-radius: 4px;
             padding: 2px 8px;
             font-size: 11px;
             font-weight: 600;
@@ -251,7 +251,7 @@ class ThemeManager:
             background-color: {t.accent_primary};
             color: {t.bg_window};
             border: none;
-            border-radius: 6px;
+            border-radius: 4px;
             padding: 8px 16px;
             font-weight: 700;
             font-size: 13px;
@@ -265,7 +265,7 @@ class ThemeManager:
             background-color: {t.bg_card};
             color: {t.text_primary};
             border: 1px solid {t.border_card};
-            border-radius: 6px;
+            border-radius: 4px;
             padding: 6px 12px;
             font-weight: 600;
         }}
@@ -297,11 +297,66 @@ class ThemeManager:
         QTableView, QTableWidget {{
             background-color: {t.bg_card};
             border: 1px solid {t.border_card};
-            border-radius: 8px;
+            border-radius: 4px;
             gridline-color: {t.border_subtle};
-            selection-background-color: {t.accent_glow};
-            selection-color: {t.accent_primary};
+            selection-background-color: {t.bg_card_hover};
+            selection-color: {t.text_primary};
             font-size: 12px;
+        }}
+
+        /* --- AI Studio --- */
+        #studio_page_title {{
+            background-color: transparent;
+            color: {t.text_primary};
+            font-size: 18px;
+            font-weight: 700;
+        }}
+
+        #studio_page_subtitle, #studio_section_subtitle,
+        #recommendation_categories {{
+            background-color: transparent;
+            color: {t.text_secondary};
+            font-size: 11px;
+        }}
+
+        #studio_section_title {{
+            background-color: transparent;
+            color: {t.text_primary};
+            font-size: 13px;
+            font-weight: 700;
+        }}
+
+        #studio_summary_title {{
+            background-color: transparent;
+            color: {t.text_primary};
+            font-size: 11px;
+            font-weight: 700;
+        }}
+
+        #recommendation_panel {{
+            background-color: {t.bg_input};
+            border: 1px solid {t.border_subtle};
+            border-radius: 4px;
+        }}
+
+        QTreeWidget#evidence_tree, QTextBrowser#report_view {{
+            background-color: {t.bg_input};
+            border: 1px solid {t.border_subtle};
+            border-radius: 4px;
+            padding: 4px;
+        }}
+
+        QProgressBar#studio_progress {{
+            background-color: {t.border_subtle};
+            border: none;
+            border-radius: 2px;
+            min-height: 4px;
+            max-height: 4px;
+        }}
+
+        QProgressBar#studio_progress::chunk {{
+            background-color: {t.accent_primary};
+            border-radius: 2px;
         }}
 
         QHeaderView::section {{

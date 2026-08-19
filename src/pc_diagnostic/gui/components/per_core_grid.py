@@ -40,10 +40,10 @@ class CoreCell(QWidget):
         header_row = QHBoxLayout()
         self.lbl_name = QLabel(f"Core {self.core_idx:02d}")
         self.lbl_name.setStyleSheet(
-            "font-size: 11px; font-weight: 600; color: #90A4AE;"
+            "font-size: 11px; font-weight: 600; color: #A6ABB3;"
         )
         self.lbl_val = QLabel("0.0%")
-        self.lbl_val.setStyleSheet("font-size: 11px; font-weight: 700; color: #F0F6FC;")
+        self.lbl_val.setStyleSheet("font-size: 11px; font-weight: 700; color: #ECEEF1;")
 
         header_row.addWidget(self.lbl_name)
         header_row.addStretch()
@@ -71,7 +71,7 @@ class CoreCell(QWidget):
         elif clamped >= 50.0:
             chunk_color = "#FFD600"
         else:
-            chunk_color = "#00E5FF"
+            chunk_color = "#60A5FA"
 
         style = (
             "QProgressBar { border: none; background-color: #151C29; "
@@ -105,14 +105,14 @@ class PerCoreGridWidget(QFrame):
         header_layout = QHBoxLayout()
         title = QLabel("PER-CORE CPU UTILIZATION")
         title.setProperty("class", "card_title")
-        title.setStyleSheet("font-size: 13px; font-weight: 700; color: #90A4AE;")
+        title.setStyleSheet("font-size: 13px; font-weight: 700; color: #A6ABB3;")
         header_layout.addWidget(title)
 
         header_layout.addStretch()
 
         self.lbl_core_count = QLabel("0 Cores")
         self.lbl_core_count.setStyleSheet(
-            "background-color: #1C2536; color: #00E5FF; "
+            "background-color: #1C1F24; color: #93C5FD; "
             "border-radius: 4px; padding: 2px 8px; font-size: 11px; font-weight: 600;"
         )
         header_layout.addWidget(self.lbl_core_count)

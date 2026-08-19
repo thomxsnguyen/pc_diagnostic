@@ -40,12 +40,12 @@ class RadialGaugeWidget(QWidget):
         self._threshold_critical = threshold_critical
 
         # Colors
-        self._color_track = QColor("#1C2536") if PYSIDE6_AVAILABLE else None
+        self._color_track = QColor("#24272D") if PYSIDE6_AVAILABLE else None
         self._color_normal = QColor("#00E676") if PYSIDE6_AVAILABLE else None
         self._color_warning = QColor("#FFD600") if PYSIDE6_AVAILABLE else None
         self._color_critical = QColor("#FF1744") if PYSIDE6_AVAILABLE else None
-        self._color_text = QColor("#F0F6FC") if PYSIDE6_AVAILABLE else None
-        self._color_subtitle = QColor("#90A4AE") if PYSIDE6_AVAILABLE else None
+        self._color_text = QColor("#ECEEF1") if PYSIDE6_AVAILABLE else None
+        self._color_subtitle = QColor("#A6ABB3") if PYSIDE6_AVAILABLE else None
 
     @property
     def value(self) -> float:

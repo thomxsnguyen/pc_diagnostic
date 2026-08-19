@@ -54,8 +54,8 @@ if PYSIDE6_AVAILABLE:
         def _init_ui(self) -> None:
             self.setStyleSheet(
                 "QWidget#mini_hud { background-color: rgba(10, 15, 24, 225); "
-                "border: 1px solid #253248; border-radius: 10px; } "
-                "QLabel { color: #F0F6FC; font-size: 11px; }"
+                "border: 1px solid #30343B; border-radius: 6px; } "
+                "QLabel { color: #ECEEF1; font-size: 11px; }"
             )
             self.setObjectName("mini_hud")
             layout = QVBoxLayout(self)
@@ -63,7 +63,7 @@ if PYSIDE6_AVAILABLE:
             layout.setSpacing(6)
 
             title = QLabel("PC DIAGNOSTIC")
-            title.setStyleSheet("font-size: 11px; font-weight: 800; color: #00E5FF;")
+            title.setStyleSheet("font-size: 11px; font-weight: 700; color: #93C5FD;")
             layout.addWidget(title)
 
             grid = QGridLayout()
@@ -80,7 +80,7 @@ if PYSIDE6_AVAILABLE:
             layout.addLayout(grid)
 
             self.process_label = QLabel("Top process: —")
-            self.process_label.setStyleSheet("color: #90A4AE; font-size: 10px;")
+            self.process_label.setStyleSheet("color: #A6ABB3; font-size: 10px;")
             self.process_label.setTextFormat(Qt.TextFormat.PlainText)
             layout.addWidget(self.process_label)
 
@@ -313,13 +313,13 @@ if PYSIDE6_AVAILABLE:
             painter = QPainter(pixmap)
             painter.setRenderHint(QPainter.RenderHint.Antialiasing)
             painter.setBrush(QColor("#101826"))
-            painter.setPen(QColor("#00E5FF"))
+            painter.setPen(QColor("#60A5FA"))
             painter.drawRoundedRect(2, 2, 60, 60, 13, 13)
             font = painter.font()
             font.setBold(True)
             font.setPixelSize(19 if len(text) <= 3 else 15)
             painter.setFont(font)
-            painter.setPen(QColor("#F0F6FC"))
+            painter.setPen(QColor("#ECEEF1"))
             painter.drawText(
                 pixmap.rect(), Qt.AlignmentFlag.AlignCenter, text[:4]
             )

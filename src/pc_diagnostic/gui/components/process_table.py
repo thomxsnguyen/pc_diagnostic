@@ -80,7 +80,7 @@ class ProcessTableWidget(QWidget):
 
         self.lbl_process_count = QLabel("0 Running")
         self.lbl_process_count.setStyleSheet(
-            "background-color: #1C2536; color: #00E5FF; "
+            "background-color: #1C1F24; color: #93C5FD; "
             "border-radius: 4px; padding: 4px 10px; font-size: 11px; font-weight: 600;"
         )
         toolbar.addWidget(self.lbl_process_count)

@@ -58,7 +58,7 @@ class StorageNetworkCard(QFrame):
         # Title
         title = QLabel("STORAGE & NETWORK I/O")
         title.setProperty("class", "card_title")
-        title.setStyleSheet("font-size: 13px; font-weight: 700; color: #90A4AE;")
+        title.setStyleSheet("font-size: 13px; font-weight: 700; color: #A6ABB3;")
         layout.addWidget(title)
 
         grid = QGridLayout()
@@ -66,9 +66,9 @@ class StorageNetworkCard(QFrame):
 
         # --- Storage Section ---
         lbl_storage_hdr = QLabel("Primary Disk")
-        lbl_storage_hdr.setStyleSheet("font-weight: 700; color: #F0F6FC;")
+        lbl_storage_hdr.setStyleSheet("font-weight: 700; color: #ECEEF1;")
         self.lbl_storage_used = QLabel("Used: 0 GB")
-        self.lbl_storage_used.setStyleSheet("color: #90A4AE; font-size: 11px;")
+        self.lbl_storage_used.setStyleSheet("color: #A6ABB3; font-size: 11px;")
 
         self.storage_bar = QProgressBar()
         self.storage_bar.setRange(0, 100)
@@ -94,14 +94,14 @@ class StorageNetworkCard(QFrame):
         # Divider
         divider = QFrame()
         divider.setFrameShape(QFrame.Shape.HLine)
-        divider.setStyleSheet("background-color: #202A3C; max-height: 1px;")
+        divider.setStyleSheet("background-color: #24272D; max-height: 1px;")
         grid.addWidget(divider, 3, 0, 1, 2)
 
         # --- Network Section ---
         lbl_net_hdr = QLabel("Network Bandwidth")
-        lbl_net_hdr.setStyleSheet("font-weight: 700; color: #F0F6FC;")
+        lbl_net_hdr.setStyleSheet("font-weight: 700; color: #ECEEF1;")
         self.lbl_net_rates = QLabel("Active")
-        self.lbl_net_rates.setStyleSheet("color: #90A4AE; font-size: 11px;")
+        self.lbl_net_rates.setStyleSheet("color: #A6ABB3; font-size: 11px;")
 
         net_rates_layout = QHBoxLayout()
         self.lbl_net_rx = QLabel("Down: 0.0 KB/s")

@@ -42,19 +42,19 @@ class FansVoltagesCard(QFrame):
         # Title
         title = QLabel("COOLING FANS & VOLTAGE RAILS")
         title.setProperty("class", "card_title")
-        title.setStyleSheet("font-size: 13px; font-weight: 700; color: #90A4AE;")
+        title.setStyleSheet("font-size: 13px; font-weight: 700; color: #A6ABB3;")
         layout.addWidget(title)
 
         # --- Section A: Fans ---
         lbl_fans_hdr = QLabel("Cooling Fans")
-        lbl_fans_hdr.setStyleSheet("font-weight: 700; color: #F0F6FC; font-size: 12px;")
+        lbl_fans_hdr.setStyleSheet("font-weight: 700; color: #ECEEF1; font-size: 12px;")
         layout.addWidget(lbl_fans_hdr)
 
         self.fans_container = QVBoxLayout()
         self.fans_container.setSpacing(6)
         self.lbl_no_fans = QLabel("Passive Cooling / No active fans detected")
         self.lbl_no_fans.setStyleSheet(
-            "color: #607D8B; font-size: 11px; font-style: italic;"
+            "color: #6F7680; font-size: 11px; font-style: italic;"
         )
         self.fans_container.addWidget(self.lbl_no_fans)
         layout.addLayout(self.fans_container)
@@ -62,13 +62,13 @@ class FansVoltagesCard(QFrame):
         # Divider
         divider = QFrame()
         divider.setFrameShape(QFrame.Shape.HLine)
-        divider.setStyleSheet("background-color: #202A3C; max-height: 1px;")
+        divider.setStyleSheet("background-color: #24272D; max-height: 1px;")
         layout.addWidget(divider)
 
         # --- Section B: Voltages ---
         lbl_volts_hdr = QLabel("Power Rails")
         lbl_volts_hdr.setStyleSheet(
-            "font-weight: 700; color: #F0F6FC; font-size: 12px;"
+            "font-weight: 700; color: #ECEEF1; font-size: 12px;"
         )
         layout.addWidget(lbl_volts_hdr)
 
@@ -76,7 +76,7 @@ class FansVoltagesCard(QFrame):
         self.volts_grid.setSpacing(8)
         self.lbl_no_volts = QLabel("Voltage rails monitored via LHM on Windows")
         self.lbl_no_volts.setStyleSheet(
-            "color: #607D8B; font-size: 11px; font-style: italic;"
+            "color: #6F7680; font-size: 11px; font-style: italic;"
         )
         self.volts_grid.addWidget(self.lbl_no_volts, 0, 0, 1, 2)
         layout.addLayout(self.volts_grid)
@@ -122,12 +122,12 @@ class FansVoltagesCard(QFrame):
                     lbl_name = QLabel(fan_name)
                     lbl_name.setStyleSheet(
                         "font-size: 11px; font-weight: 600; "
-                        "color: #F0F6FC; min-width: 80px;"
+                        "color: #ECEEF1; min-width: 80px;"
                     )
                     lbl_val = QLabel(f"{rpm:.0f} RPM")
                     lbl_val.setStyleSheet(
                         "font-size: 11px; font-weight: 700; "
-                        "color: #00E5FF; min-width: 70px;"
+                        "color: #93C5FD; min-width: 70px;"
                     )
 
                     bar = QProgressBar()
@@ -136,7 +136,7 @@ class FansVoltagesCard(QFrame):
                     bar.setTextVisible(False)
                     bar.setMaximumHeight(6)
                     bar.setStyleSheet(
-                        "QProgressBar::chunk { background-color: #00E5FF; "
+                        "QProgressBar::chunk { background-color: #60A5FA; "
                         "border-radius: 2px; }"
                     )
 
@@ -162,7 +162,7 @@ class FansVoltagesCard(QFrame):
                 if key not in self._voltages:
                     lbl_name = QLabel(rail_name)
                     lbl_name.setStyleSheet(
-                        "font-size: 11px; font-weight: 600; color: #90A4AE;"
+                        "font-size: 11px; font-weight: 600; color: #A6ABB3;"
                     )
                     lbl_val = QLabel(f"{volts:.2f} V")
                     lbl_val.setStyleSheet(

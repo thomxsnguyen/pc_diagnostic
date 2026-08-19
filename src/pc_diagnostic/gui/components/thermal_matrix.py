@@ -45,11 +45,11 @@ class ThermalMatrixWidget(QFrame):
 
         title = QLabel("HARDWARE THERMAL MATRIX")
         title.setProperty("class", "card_title")
-        title.setStyleSheet("font-size: 13px; font-weight: 700; color: #90A4AE;")
+        title.setStyleSheet("font-size: 13px; font-weight: 700; color: #A6ABB3;")
         layout.addWidget(title)
 
         subtitle = QLabel("Monitored via macOS SMC/HID or Windows LibreHardwareMonitor")
-        subtitle.setStyleSheet("color: #607D8B; font-size: 11px;")
+        subtitle.setStyleSheet("color: #6F7680; font-size: 11px;")
         layout.addWidget(subtitle)
 
         # Table Widget

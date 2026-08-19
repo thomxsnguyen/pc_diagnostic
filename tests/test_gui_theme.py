@@ -20,7 +20,7 @@ class TestThemeManager(unittest.TestCase):
         qss = self.manager.set_theme(ThemeMode.OLED_STEALTH)
         self.assertEqual(self.manager.mode, ThemeMode.OLED_STEALTH)
         self.assertEqual(self.manager.tokens, OLED_STEALTH)
-        self.assertIn("#000000", qss)
+        self.assertIn(OLED_STEALTH.bg_window, qss)
         self.assertIn("OLED Stealth", qss)
 
     def test_switch_to_clean_light(self) -> None:

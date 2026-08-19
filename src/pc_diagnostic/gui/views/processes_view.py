@@ -74,9 +74,9 @@ class ProcessesView(QWidget):
         vbox_left = QVBoxLayout()
         title = QLabel("PROCESS INSPECTOR")
         title.setProperty("class", "card_title")
-        title.setStyleSheet("font-size: 14px; font-weight: 700; color: #F0F6FC;")
+        title.setStyleSheet("font-size: 14px; font-weight: 700; color: #ECEEF1;")
         self.lbl_summary = QLabel("Monitoring active threads & task resources")
-        self.lbl_summary.setStyleSheet("color: #90A4AE; font-size: 11px;")
+        self.lbl_summary.setStyleSheet("color: #A6ABB3; font-size: 11px;")
         vbox_left.addWidget(title)
         vbox_left.addWidget(self.lbl_summary)
         banner_layout.addLayout(vbox_left, stretch=2)
@@ -85,11 +85,11 @@ class ProcessesView(QWidget):
         vbox_mid = QVBoxLayout()
         self.lbl_top_cpu = QLabel("Top CPU: —")
         self.lbl_top_cpu.setStyleSheet(
-            "color: #00E5FF; font-size: 12px; font-weight: 600;"
+            "color: #93C5FD; font-size: 12px; font-weight: 600;"
         )
         self.lbl_top_mem = QLabel("Top RAM: —")
         self.lbl_top_mem.setStyleSheet(
-            "color: #64B5F6; font-size: 12px; font-weight: 600;"
+            "color: #A6ABB3; font-size: 12px; font-weight: 600;"
         )
         vbox_mid.addWidget(self.lbl_top_cpu)
         vbox_mid.addWidget(self.lbl_top_mem)
@@ -98,10 +98,10 @@ class ProcessesView(QWidget):
         # Right Action Buttons
         self.btn_pause = QPushButton("Pause")
         self.btn_pause.setStyleSheet(
-            "QPushButton { background-color: #1C2536; color: #F0F6FC; "
-            "border: 1px solid #253248; border-radius: 4px; padding: 6px 14px; "
+            "QPushButton { background-color: #1C1F24; color: #ECEEF1; "
+            "border: 1px solid #30343B; border-radius: 4px; padding: 6px 14px; "
             "font-weight: 600; } "
-            "QPushButton:hover { background-color: #253248; }"
+            "QPushButton:hover { background-color: #24272D; }"
         )
         self.btn_pause.clicked.connect(self._toggle_pause)
         banner_layout.addWidget(self.btn_pause, alignment=Qt.AlignmentFlag.AlignRight)
@@ -124,8 +124,8 @@ class ProcessesView(QWidget):
         else:
             self.btn_pause.setText("Pause")
             self.btn_pause.setStyleSheet(
-                "QPushButton { background-color: #1C2536; color: #F0F6FC; "
-                "border: 1px solid #253248; border-radius: 4px; padding: 6px 14px; "
+                "QPushButton { background-color: #1C1F24; color: #ECEEF1; "
+                "border: 1px solid #30343B; border-radius: 4px; padding: 6px 14px; "
                 "font-weight: 600; }"
             )
 

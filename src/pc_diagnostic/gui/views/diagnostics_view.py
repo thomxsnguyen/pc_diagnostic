@@ -24,6 +24,7 @@ try:
         QFileDialog,
         QFrame,
         QHBoxLayout,
+        QHeaderView,
         QLabel,
         QProgressBar,
         QPushButton,
@@ -220,92 +221,142 @@ class DiagnosticsView(QWidget):
 
     def _init_ui(self) -> None:
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(20, 16, 20, 20)
-        layout.setSpacing(14)
+        layout.setContentsMargins(24, 20, 24, 24)
+        layout.setSpacing(16)
 
         header = QFrame(self)
         header.setProperty("class", "card")
         header_layout = QHBoxLayout(header)
-        header_layout.setContentsMargins(16, 12, 16, 12)
+        header_layout.setContentsMargins(18, 14, 18, 14)
+        header_layout.setSpacing(16)
 
         title_column = QVBoxLayout()
-        title = QLabel("AI DIAGNOSTICS STUDIO")
-        title.setStyleSheet("font-size: 14px; font-weight: 700;")
+        title_column.setSpacing(4)
+        title = QLabel("AI Studio")
+        title.setObjectName("studio_page_title")
         self.status_label = QLabel("Ready to analyze the latest telemetry snapshot")
-        self.status_label.setStyleSheet("color: #90A4AE; font-size: 11px;")
+        self.status_label.setObjectName("studio_page_subtitle")
         title_column.addWidget(title)
         title_column.addWidget(self.status_label)
         header_layout.addLayout(title_column, stretch=1)
 
         self.health_badge = QLabel("Health —")
         self.health_badge.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.health_badge.setMinimumWidth(90)
+        self.health_badge.setMinimumWidth(96)
         self._style_health_badge(None)
         header_layout.addWidget(self.health_badge)
 
-        self.run_button = QPushButton("Run Full System Diagnosis")
+        self.run_button = QPushButton("Run diagnosis")
+        self.run_button.setProperty("class", "primary_btn")
+        self.run_button.setMinimumWidth(138)
         self.run_button.clicked.connect(self.start_diagnosis)
         header_layout.addWidget(self.run_button)
         layout.addWidget(header)
 
         self.progress_bar = QProgressBar(self)
+        self.progress_bar.setObjectName("studio_progress")
         self.progress_bar.setRange(0, 100)
         self.progress_bar.setValue(0)
-        self.progress_bar.setTextVisible(True)
+        self.progress_bar.setTextVisible(False)
+        self.progress_bar.setMaximumHeight(5)
         layout.addWidget(self.progress_bar)
 
         splitter = QSplitter(Qt.Orientation.Horizontal, self)
+        splitter.setChildrenCollapsible(False)
+        splitter.setHandleWidth(8)
+
         evidence_card = QFrame(splitter)
         evidence_card.setProperty("class", "card")
         evidence_layout = QVBoxLayout(evidence_card)
-        evidence_layout.addWidget(QLabel("CAPTURED EVIDENCE"))
+        evidence_layout.setContentsMargins(14, 14, 14, 14)
+        evidence_layout.setSpacing(10)
+
+        evidence_title = QLabel("Evidence snapshot")
+        evidence_title.setObjectName("studio_section_title")
+        evidence_subtitle = QLabel("Telemetry captured for this analysis")
+        evidence_subtitle.setObjectName("studio_section_subtitle")
+        evidence_layout.addWidget(evidence_title)
+        evidence_layout.addWidget(evidence_subtitle)
+
         self.evidence_tree = QTreeWidget(evidence_card)
+        self.evidence_tree.setObjectName("evidence_tree")
         self.evidence_tree.setHeaderLabels(["Evidence", "Captured value"])
-        self.evidence_tree.setAlternatingRowColors(True)
+        self.evidence_tree.setAlternatingRowColors(False)
+        self.evidence_tree.setIndentation(16)
+        self.evidence_tree.setUniformRowHeights(True)
+        evidence_header = self.evidence_tree.header()
+        evidence_header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
+        evidence_header.setSectionResizeMode(1, QHeaderView.ResizeMode.Interactive)
+        evidence_header.resizeSection(1, 120)
         evidence_layout.addWidget(self.evidence_tree)
 
         report_card = QFrame(splitter)
         report_card.setProperty("class", "card")
         report_layout = QVBoxLayout(report_card)
-        report_layout.addWidget(QLabel("DIAGNOSTIC REPORT"))
-        self.recommendation_categories = QLabel(
-            "Recommendation focus will appear after analysis"
-        )
-        self.recommendation_categories.setWordWrap(True)
-        self.recommendation_categories.setStyleSheet("color: #90A4AE; font-size: 11px;")
-        report_layout.addWidget(self.recommendation_categories)
-        self.report_view = QTextBrowser(report_card)
-        self.report_view.setOpenExternalLinks(True)
-        self.report_view.setPlaceholderText(
-            "Run a diagnosis to generate hardware and software recommendations."
-        )
-        report_layout.addWidget(self.report_view)
+        report_layout.setContentsMargins(14, 14, 14, 14)
+        report_layout.setSpacing(10)
 
-        splitter.addWidget(evidence_card)
-        splitter.addWidget(report_card)
-        splitter.setStretchFactor(0, 2)
-        splitter.setStretchFactor(1, 3)
-        layout.addWidget(splitter, stretch=1)
+        report_header = QHBoxLayout()
+        report_header.setSpacing(6)
+        report_title_column = QVBoxLayout()
+        report_title_column.setSpacing(2)
+        report_title = QLabel("Diagnostic report")
+        report_title.setObjectName("studio_section_title")
+        report_subtitle = QLabel("Analysis, findings, and recommended actions")
+        report_subtitle.setObjectName("studio_section_subtitle")
+        report_title_column.addWidget(report_title)
+        report_title_column.addWidget(report_subtitle)
+        report_header.addLayout(report_title_column, stretch=1)
 
-        actions = QHBoxLayout()
-        actions.addStretch()
-        self.save_markdown_button = QPushButton("Save Markdown")
-        self.save_html_button = QPushButton("Export HTML")
-        self.save_pdf_button = QPushButton("Export PDF")
-        self.copy_button = QPushButton("Copy Report")
+        self.copy_button = QPushButton("Copy")
+        self.save_markdown_button = QPushButton("Markdown")
+        self.save_html_button = QPushButton("HTML")
+        self.save_pdf_button = QPushButton("PDF")
         self.save_markdown_button.clicked.connect(self.save_markdown)
         self.save_html_button.clicked.connect(self.save_html)
         self.save_pdf_button.clicked.connect(self.save_pdf)
         self.copy_button.clicked.connect(self.copy_report)
         for button in (
+            self.copy_button,
             self.save_markdown_button,
             self.save_html_button,
             self.save_pdf_button,
-            self.copy_button,
         ):
+            button.setProperty("class", "secondary_btn")
             button.setEnabled(False)
-            actions.addWidget(button)
-        layout.addLayout(actions)
+            report_header.addWidget(button)
+        report_layout.addLayout(report_header)
+
+        self.report_view = QTextBrowser(report_card)
+        self.report_view.setObjectName("report_view")
+        self.report_view.setOpenExternalLinks(True)
+        self.report_view.setPlaceholderText(
+            "Run a diagnosis to generate hardware and software recommendations."
+        )
+        report_layout.addWidget(self.report_view, stretch=1)
+
+        recommendation_panel = QFrame(report_card)
+        recommendation_panel.setObjectName("recommendation_panel")
+        recommendation_layout = QVBoxLayout(recommendation_panel)
+        recommendation_layout.setContentsMargins(12, 10, 12, 10)
+        recommendation_layout.setSpacing(4)
+        recommendation_title = QLabel("Recommendation summary")
+        recommendation_title.setObjectName("studio_summary_title")
+        self.recommendation_categories = QLabel(
+            "Recommendation focus will appear after analysis"
+        )
+        self.recommendation_categories.setWordWrap(True)
+        self.recommendation_categories.setObjectName("recommendation_categories")
+        recommendation_layout.addWidget(recommendation_title)
+        recommendation_layout.addWidget(self.recommendation_categories)
+        report_layout.addWidget(recommendation_panel)
+
+        splitter.addWidget(evidence_card)
+        splitter.addWidget(report_card)
+        splitter.setStretchFactor(0, 2)
+        splitter.setStretchFactor(1, 3)
+        splitter.setSizes([320, 600])
+        layout.addWidget(splitter, stretch=1)
 
     def start_diagnosis(self) -> None:
         if self._worker is not None and self._worker.isRunning():
@@ -406,7 +457,7 @@ class DiagnosticsView(QWidget):
 
     def _style_health_badge(self, score: int | None) -> None:
         if score is None:
-            text, color = "Health —", "#607D8B"
+            text, color = "Health —", "#6F7680"
         elif score >= 80:
             text, color = f"Health {score}%", "#00C853"
         elif score >= 55:
@@ -415,8 +466,8 @@ class DiagnosticsView(QWidget):
             text, color = f"Health {score}%", "#FF1744"
         self.health_badge.setText(text)
         self.health_badge.setStyleSheet(
-            f"background-color: {color}; color: #FFFFFF; font-weight: 800; "
-            "border-radius: 5px; padding: 7px 10px;"
+            f"background-color: transparent; color: {color}; font-weight: 700; "
+            "border: 1px solid #30343B; border-radius: 4px; padding: 7px 10px;"
         )
 
     def _populate_evidence_tree(self, evidence: dict[str, Any]) -> None:
@@ -440,7 +491,6 @@ class DiagnosticsView(QWidget):
             for key in keys:
                 self._append_tree_value(parent, key, evidence.get(key))
             parent.setExpanded(True)
-        self.evidence_tree.resizeColumnToContents(0)
 
     def _append_tree_value(
         self, parent: QTreeWidgetItem, label: str, value: Any

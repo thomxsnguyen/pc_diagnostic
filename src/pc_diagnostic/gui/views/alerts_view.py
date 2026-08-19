@@ -92,17 +92,17 @@ class AlertsView(QWidget):
         header_row = QHBoxLayout()
         title = QLabel("ACTIVE & RECENT INCIDENTS")
         title.setProperty("class", "card_title")
-        title.setStyleSheet("font-size: 13px; font-weight: 700; color: #90A4AE;")
+        title.setStyleSheet("font-size: 13px; font-weight: 700; color: #A6ABB3;")
         header_row.addWidget(title)
 
         header_row.addStretch()
 
         self.btn_clear_log = QPushButton("Clear Incident History")
         self.btn_clear_log.setStyleSheet(
-            "QPushButton { background-color: #1C2536; color: #90A4AE; "
-            "border: 1px solid #253248; border-radius: 4px; padding: 4px 10px; "
+            "QPushButton { background-color: #1C1F24; color: #A6ABB3; "
+            "border: 1px solid #30343B; border-radius: 4px; padding: 4px 10px; "
             "font-size: 11px; } "
-            "QPushButton:hover { background-color: #253248; color: #F0F6FC; }"
+            "QPushButton:hover { background-color: #24272D; color: #ECEEF1; }"
         )
         self.btn_clear_log.clicked.connect(self._clear_incidents)
         header_row.addWidget(self.btn_clear_log)
@@ -149,7 +149,7 @@ class AlertsView(QWidget):
 
         title = QLabel("THRESHOLD & DEBOUNCE CONFIGURATION")
         title.setProperty("class", "card_title")
-        title.setStyleSheet("font-size: 13px; font-weight: 700; color: #90A4AE;")
+        title.setStyleSheet("font-size: 13px; font-weight: 700; color: #A6ABB3;")
         layout.addWidget(title)
 
         grid = QGridLayout()
@@ -157,10 +157,10 @@ class AlertsView(QWidget):
 
         # Slider 1: CPU Threshold
         lbl_cpu = QLabel("High CPU Threshold")
-        lbl_cpu.setStyleSheet("color: #F0F6FC; font-weight: 600; font-size: 12px;")
+        lbl_cpu.setStyleSheet("color: #ECEEF1; font-weight: 600; font-size: 12px;")
         self.lbl_cpu_val = QLabel(f"{int(self.cpu_threshold)}%")
         self.lbl_cpu_val.setStyleSheet(
-            "color: #00E5FF; font-weight: 700; font-size: 12px;"
+            "color: #93C5FD; font-weight: 700; font-size: 12px;"
         )
         self.slider_cpu = QSlider(Qt.Orientation.Horizontal)
         self.slider_cpu.setRange(50, 99)
@@ -173,10 +173,10 @@ class AlertsView(QWidget):
 
         # Slider 2: Memory Threshold
         lbl_mem = QLabel("High Memory Threshold")
-        lbl_mem.setStyleSheet("color: #F0F6FC; font-weight: 600; font-size: 12px;")
+        lbl_mem.setStyleSheet("color: #ECEEF1; font-weight: 600; font-size: 12px;")
         self.lbl_mem_val = QLabel(f"{int(self.mem_threshold)}%")
         self.lbl_mem_val.setStyleSheet(
-            "color: #64B5F6; font-weight: 700; font-size: 12px;"
+            "color: #A6ABB3; font-weight: 700; font-size: 12px;"
         )
         self.slider_mem = QSlider(Qt.Orientation.Horizontal)
         self.slider_mem.setRange(50, 99)
@@ -189,7 +189,7 @@ class AlertsView(QWidget):
 
         # Slider 3: Debounce Duration
         lbl_debounce = QLabel("Debounce Duration (Hold Time)")
-        lbl_debounce.setStyleSheet("color: #F0F6FC; font-weight: 600; font-size: 12px;")
+        lbl_debounce.setStyleSheet("color: #ECEEF1; font-weight: 600; font-size: 12px;")
         self.lbl_debounce_val = QLabel(f"{int(self.debounce_s)}s")
         self.lbl_debounce_val.setStyleSheet(
             "color: #FFD600; font-weight: 700; font-size: 12px;"
@@ -206,7 +206,7 @@ class AlertsView(QWidget):
         # Slider 4: Hysteresis Margin
         lbl_hysteresis = QLabel("Clear Hysteresis Margin")
         lbl_hysteresis.setStyleSheet(
-            "color: #F0F6FC; font-weight: 600; font-size: 12px;"
+            "color: #ECEEF1; font-weight: 600; font-size: 12px;"
         )
         self.lbl_hysteresis_val = QLabel(f"{int(self.hysteresis)}%")
         self.lbl_hysteresis_val.setStyleSheet(
