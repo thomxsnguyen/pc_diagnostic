@@ -306,7 +306,7 @@ class ThemeManager:
 
         /* --- AI Studio --- */
         #studio_page_title, #overview_page_title, #process_page_title,
-        #sensors_page_title {{
+        #sensors_page_title, #alerts_page_title {{
             background-color: transparent;
             color: {t.text_primary};
             font-size: 18px;
@@ -317,6 +317,7 @@ class ThemeManager:
         #overview_page_subtitle, #overview_section_subtitle,
         #process_page_subtitle, #process_section_subtitle,
         #sensors_page_subtitle, #sensors_section_subtitle,
+        #alerts_page_subtitle, #alerts_section_subtitle,
         #recommendation_categories {{
             background-color: transparent;
             color: {t.text_secondary};
@@ -324,7 +325,7 @@ class ThemeManager:
         }}
 
         #studio_section_title, #overview_section_title, #process_section_title,
-        #sensors_section_title {{
+        #sensors_section_title, #alerts_section_title {{
             background-color: transparent;
             color: {t.text_primary};
             font-size: 13px;
@@ -552,6 +553,84 @@ class ThemeManager:
             background-color: {t.bg_input};
             border: 1px solid {t.border_subtle};
             font-size: 11px;
+        }}
+
+        /* --- Alerts --- */
+        QScrollArea#alerts_scroll {{
+            background-color: transparent;
+            border: none;
+        }}
+
+        QWidget#alerts_root QLabel {{
+            background-color: transparent;
+        }}
+
+        #alerts_page_title, #alerts_page_subtitle,
+        #alerts_section_title, #alerts_section_subtitle {{
+            background-color: transparent;
+        }}
+
+        QTableWidget#alerts_incidents_table {{
+            background-color: {t.bg_input};
+            border: 1px solid {t.border_subtle};
+            font-size: 11px;
+        }}
+
+        QFrame#alert_control_panel {{
+            background-color: {t.bg_input};
+            border: 1px solid {t.border_subtle};
+            border-radius: 5px;
+        }}
+
+        #alert_control_title {{
+            color: {t.text_primary};
+            font-size: 12px;
+            font-weight: 600;
+        }}
+
+        #alert_control_description {{
+            color: {t.text_muted};
+            font-size: 10px;
+        }}
+
+        #alert_control_value {{
+            color: {t.accent_secondary};
+            font-size: 12px;
+            font-weight: 700;
+        }}
+
+        QSlider#alert_slider {{
+            min-height: 28px;
+        }}
+
+        QSlider#alert_slider::groove:horizontal {{
+            background-color: {t.border_subtle};
+            height: 4px;
+            border-radius: 2px;
+        }}
+
+        QSlider#alert_slider::sub-page:horizontal {{
+            background-color: {t.accent_primary};
+            border-radius: 2px;
+        }}
+
+        QSlider#alert_slider::add-page:horizontal {{
+            background-color: {t.border_subtle};
+            border-radius: 2px;
+        }}
+
+        QSlider#alert_slider::handle:horizontal {{
+            background-color: {t.accent_secondary};
+            border: 2px solid {t.bg_card};
+            width: 14px;
+            height: 14px;
+            margin: -6px 0;
+            border-radius: 8px;
+        }}
+
+        QSlider#alert_slider::handle:horizontal:hover {{
+            background-color: {t.text_primary};
+            border-color: {t.accent_primary};
         }}
 
         QHeaderView::section {{

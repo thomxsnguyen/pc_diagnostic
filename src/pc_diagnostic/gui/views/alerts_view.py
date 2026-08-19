@@ -58,20 +58,36 @@ class AlertsView(QWidget):
             return
 
         scroll = QScrollArea(self)
+        scroll.setObjectName("alerts_scroll")
         scroll.setWidgetResizable(True)
         scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        scroll.setStyleSheet("background-color: transparent; border: none;")
 
         container = QWidget()
+        container.setObjectName("alerts_root")
         main_layout = QVBoxLayout(container)
-        main_layout.setContentsMargins(20, 16, 20, 20)
+        main_layout.setContentsMargins(24, 20, 24, 24)
         main_layout.setSpacing(16)
 
-        # 1. Active Incidents Log Card
-        incidents_card = self._build_incidents_card()
-        main_layout.addWidget(incidents_card)
+        # 1. Page header
+        header = QFrame(container)
+        header.setProperty("class", "card")
+        header_layout = QVBoxLayout(header)
+        header_layout.setContentsMargins(18, 14, 18, 14)
+        header_layout.setSpacing(4)
 
-        # 2. Alert Threshold Sliders Card
+        title = QLabel("Alerts")
+        title.setObjectName("alerts_page_title")
+        subtitle = QLabel("Incident history and notification thresholds")
+        subtitle.setObjectName("alerts_page_subtitle")
+        header_layout.addWidget(title)
+        header_layout.addWidget(subtitle)
+        main_layout.addWidget(header)
+
+        # 2. Active incidents
+        incidents_card = self._build_incidents_card()
+        main_layout.addWidget(incidents_card, stretch=1)
+
+        # 3. Alert thresholds
         config_card = self._build_config_card()
         main_layout.addWidget(config_card)
 
@@ -90,26 +106,27 @@ class AlertsView(QWidget):
         layout.setSpacing(10)
 
         header_row = QHBoxLayout()
-        title = QLabel("ACTIVE & RECENT INCIDENTS")
-        title.setProperty("class", "card_title")
-        title.setStyleSheet("font-size: 13px; font-weight: 700; color: #A6ABB3;")
-        header_row.addWidget(title)
+        title_column = QVBoxLayout()
+        title_column.setSpacing(4)
+        title = QLabel("Incident history")
+        title.setObjectName("alerts_section_title")
+        subtitle = QLabel("Active and recently triggered alert rules")
+        subtitle.setObjectName("alerts_section_subtitle")
+        title_column.addWidget(title)
+        title_column.addWidget(subtitle)
+        header_row.addLayout(title_column)
 
         header_row.addStretch()
 
-        self.btn_clear_log = QPushButton("Clear Incident History")
-        self.btn_clear_log.setStyleSheet(
-            "QPushButton { background-color: #1C1F24; color: #A6ABB3; "
-            "border: 1px solid #30343B; border-radius: 4px; padding: 4px 10px; "
-            "font-size: 11px; } "
-            "QPushButton:hover { background-color: #24272D; color: #ECEEF1; }"
-        )
+        self.btn_clear_log = QPushButton("Clear history")
+        self.btn_clear_log.setProperty("class", "secondary_btn")
         self.btn_clear_log.clicked.connect(self._clear_incidents)
         header_row.addWidget(self.btn_clear_log)
         layout.addLayout(header_row)
 
         # Incidents Table
         self.incidents_table = QTableWidget(0, 5)
+        self.incidents_table.setObjectName("alerts_incidents_table")
         self.incidents_table.setHorizontalHeaderLabels(
             ["Timestamp", "Rule ID", "State", "Trigger Value", "Threshold"]
         )
@@ -132,10 +149,6 @@ class AlertsView(QWidget):
         self.incidents_table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         self.incidents_table.setShowGrid(False)
         self.incidents_table.setMinimumHeight(180)
-        self.incidents_table.setStyleSheet(
-            "background-color: transparent; border: none; font-size: 11px;"
-        )
-
         layout.addWidget(self.incidents_table)
         return card
 
@@ -147,82 +160,119 @@ class AlertsView(QWidget):
         layout.setContentsMargins(16, 14, 16, 14)
         layout.setSpacing(14)
 
-        title = QLabel("THRESHOLD & DEBOUNCE CONFIGURATION")
-        title.setProperty("class", "card_title")
-        title.setStyleSheet("font-size: 13px; font-weight: 700; color: #A6ABB3;")
+        title = QLabel("Threshold configuration")
+        title.setObjectName("alerts_section_title")
         layout.addWidget(title)
+
+        subtitle = QLabel("Tune when resource alerts activate and clear")
+        subtitle.setObjectName("alerts_section_subtitle")
+        layout.addWidget(subtitle)
 
         grid = QGridLayout()
         grid.setSpacing(12)
 
         # Slider 1: CPU Threshold
-        lbl_cpu = QLabel("High CPU Threshold")
-        lbl_cpu.setStyleSheet("color: #ECEEF1; font-weight: 600; font-size: 12px;")
         self.lbl_cpu_val = QLabel(f"{int(self.cpu_threshold)}%")
-        self.lbl_cpu_val.setStyleSheet(
-            "color: #93C5FD; font-weight: 700; font-size: 12px;"
-        )
         self.slider_cpu = QSlider(Qt.Orientation.Horizontal)
         self.slider_cpu.setRange(50, 99)
         self.slider_cpu.setValue(int(self.cpu_threshold))
         self.slider_cpu.valueChanged.connect(self._on_cpu_slider_changed)
-
-        grid.addWidget(lbl_cpu, 0, 0)
-        grid.addWidget(self.lbl_cpu_val, 0, 1, Qt.AlignmentFlag.AlignRight)
-        grid.addWidget(self.slider_cpu, 1, 0, 1, 2)
+        grid.addWidget(
+            self._build_slider_control(
+                "High CPU threshold",
+                "Alert when total CPU usage remains above this level",
+                self.lbl_cpu_val,
+                self.slider_cpu,
+            ),
+            0,
+            0,
+        )
 
         # Slider 2: Memory Threshold
-        lbl_mem = QLabel("High Memory Threshold")
-        lbl_mem.setStyleSheet("color: #ECEEF1; font-weight: 600; font-size: 12px;")
         self.lbl_mem_val = QLabel(f"{int(self.mem_threshold)}%")
-        self.lbl_mem_val.setStyleSheet(
-            "color: #A6ABB3; font-weight: 700; font-size: 12px;"
-        )
         self.slider_mem = QSlider(Qt.Orientation.Horizontal)
         self.slider_mem.setRange(50, 99)
         self.slider_mem.setValue(int(self.mem_threshold))
         self.slider_mem.valueChanged.connect(self._on_mem_slider_changed)
-
-        grid.addWidget(lbl_mem, 2, 0)
-        grid.addWidget(self.lbl_mem_val, 2, 1, Qt.AlignmentFlag.AlignRight)
-        grid.addWidget(self.slider_mem, 3, 0, 1, 2)
+        grid.addWidget(
+            self._build_slider_control(
+                "High memory threshold",
+                "Alert when memory usage remains above this level",
+                self.lbl_mem_val,
+                self.slider_mem,
+            ),
+            0,
+            1,
+        )
 
         # Slider 3: Debounce Duration
-        lbl_debounce = QLabel("Debounce Duration (Hold Time)")
-        lbl_debounce.setStyleSheet("color: #ECEEF1; font-weight: 600; font-size: 12px;")
         self.lbl_debounce_val = QLabel(f"{int(self.debounce_s)}s")
-        self.lbl_debounce_val.setStyleSheet(
-            "color: #FFD600; font-weight: 700; font-size: 12px;"
-        )
         self.slider_debounce = QSlider(Qt.Orientation.Horizontal)
         self.slider_debounce.setRange(1, 30)
         self.slider_debounce.setValue(int(self.debounce_s))
         self.slider_debounce.valueChanged.connect(self._on_debounce_slider_changed)
-
-        grid.addWidget(lbl_debounce, 4, 0)
-        grid.addWidget(self.lbl_debounce_val, 4, 1, Qt.AlignmentFlag.AlignRight)
-        grid.addWidget(self.slider_debounce, 5, 0, 1, 2)
+        grid.addWidget(
+            self._build_slider_control(
+                "Debounce duration",
+                "Required hold time before an alert activates",
+                self.lbl_debounce_val,
+                self.slider_debounce,
+            ),
+            1,
+            0,
+        )
 
         # Slider 4: Hysteresis Margin
-        lbl_hysteresis = QLabel("Clear Hysteresis Margin")
-        lbl_hysteresis.setStyleSheet(
-            "color: #ECEEF1; font-weight: 600; font-size: 12px;"
-        )
         self.lbl_hysteresis_val = QLabel(f"{int(self.hysteresis)}%")
-        self.lbl_hysteresis_val.setStyleSheet(
-            "color: #00E676; font-weight: 700; font-size: 12px;"
-        )
         self.slider_hysteresis = QSlider(Qt.Orientation.Horizontal)
         self.slider_hysteresis.setRange(1, 15)
         self.slider_hysteresis.setValue(int(self.hysteresis))
         self.slider_hysteresis.valueChanged.connect(self._on_hysteresis_slider_changed)
-
-        grid.addWidget(lbl_hysteresis, 6, 0)
-        grid.addWidget(self.lbl_hysteresis_val, 6, 1, Qt.AlignmentFlag.AlignRight)
-        grid.addWidget(self.slider_hysteresis, 7, 0, 1, 2)
+        grid.addWidget(
+            self._build_slider_control(
+                "Clear hysteresis margin",
+                "Required recovery margin before an alert clears",
+                self.lbl_hysteresis_val,
+                self.slider_hysteresis,
+            ),
+            1,
+            1,
+        )
 
         layout.addLayout(grid)
         return card
+
+    def _build_slider_control(
+        self,
+        title_text: str,
+        description: str,
+        value_label: QLabel,
+        slider: QSlider,
+    ) -> QFrame:
+        """Build one compact threshold control without changing rule behavior."""
+        panel = QFrame(self)
+        panel.setObjectName("alert_control_panel")
+        panel_layout = QVBoxLayout(panel)
+        panel_layout.setContentsMargins(12, 10, 12, 10)
+        panel_layout.setSpacing(5)
+
+        title_row = QHBoxLayout()
+        title = QLabel(title_text)
+        title.setObjectName("alert_control_title")
+        value_label.setObjectName("alert_control_value")
+        title_row.addWidget(title)
+        title_row.addStretch()
+        title_row.addWidget(value_label)
+        panel_layout.addLayout(title_row)
+
+        helper = QLabel(description)
+        helper.setObjectName("alert_control_description")
+        panel_layout.addWidget(helper)
+
+        slider.setObjectName("alert_slider")
+        slider.setMinimumHeight(28)
+        panel_layout.addWidget(slider)
+        return panel
 
     def _on_cpu_slider_changed(self, val: int) -> None:
         self.cpu_threshold = float(val)

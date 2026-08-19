@@ -52,6 +52,12 @@ class TopProcessesPreview(QFrame):
         self.table.setObjectName("overview_processes_table")
         self.table.setHorizontalHeaderLabels(["PID", "Process Name", "CPU %", "RAM"])
         self.table.verticalHeader().setVisible(False)
+        self.table.verticalHeader().setDefaultSectionSize(24)
+        self.table.horizontalHeader().setFixedHeight(30)
+        self.table.setHorizontalScrollBarPolicy(
+            Qt.ScrollBarPolicy.ScrollBarAlwaysOff
+        )
+        self.table.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.table.horizontalHeader().setSectionResizeMode(
             1, QHeaderView.ResizeMode.Stretch
         )
