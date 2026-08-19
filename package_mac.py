@@ -135,7 +135,6 @@ def create_dmg(project_dir: Path, app_dir: Path) -> Path:
     with tempfile.TemporaryDirectory(prefix="pc-diagnostic-dmg-") as temp_dir:
         staging = Path(temp_dir)
         shutil.copytree(app_dir, staging / app_dir.name)
-        (staging / "Applications").symlink_to("/Applications")
         subprocess.run(
             [
                 create_dmg_tool,

@@ -9,6 +9,11 @@ block_cipher = None
 pyqtgraph_datas = collect_data_files(
     'pyqtgraph', includes=['colors/maps/*.csv', 'icons/**']
 )
+crewai_datas = collect_data_files(
+    'crewai',
+    includes=['translations/*.json', 'utilities/__init__.py'],
+    include_py_files=True,
+)
 smc_helper = 'src/pc_diagnostic/providers/smc_helper'
 native_binaries = (
     [(smc_helper, 'pc_diagnostic/providers')] if os.path.exists(smc_helper) else []
@@ -18,7 +23,7 @@ a = Analysis(
     ['src/pc_diagnostic/main.py'],
     pathex=[],
     binaries=native_binaries,
-    datas=pyqtgraph_datas,
+    datas=pyqtgraph_datas + crewai_datas,
     hiddenimports=[
         'psutil',
         'rich',

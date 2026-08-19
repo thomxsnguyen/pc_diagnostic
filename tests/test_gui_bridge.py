@@ -1,5 +1,6 @@
 import time
 import unittest
+from threading import Thread
 
 from pc_diagnostic.cache import RollingCache
 from pc_diagnostic.gui.bridge import TelemetryBridge
@@ -69,6 +70,36 @@ class TestTelemetryBridge(unittest.TestCase):
         self.bridge.emit_diagnosis("# Diagnosis Report")
 
         self.assertEqual(received_reports, ["# Diagnosis Report"])
+
+    def test_concurrent_cache_writes_and_bridge_ticks(self) -> None:
+        received_snapshots = []
+        self.bridge.snapshot_updated.connect(received_snapshots.append)
+
+        def publish() -> None:
+            for value in range(100):
+                self.cache.push(
+                    Snapshot(
+                        timestamp=time.time(),
+                        readings=[
+                            MetricReading(
+                                metric="cpu.utilization.total",
+                                value=float(value),
+                                unit=MetricUnit.PERCENT,
+                                source="thread",
+                            )
+                        ],
+                    )
+                )
+
+        publisher = Thread(target=publish)
+        publisher.start()
+        for _ in range(100):
+            self.bridge._on_tick()
+        publisher.join(timeout=2.0)
+
+        self.assertFalse(publisher.is_alive())
+        self.assertIsNotNone(self.cache.latest())
+        self.assertGreater(len(received_snapshots), 0)
 
     def test_bridge_update_rule_threshold(self) -> None:
         self.bridge.update_rule_threshold("high_memory", threshold=50.0, duration_s=1.0)

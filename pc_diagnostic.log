@@ -106,3 +106,10 @@
 2026-08-18 16:13:53,616 [INFO] pc_diagnostic.collector: Stopping collector thread...
 2026-08-18 16:13:53,616 [INFO] pc_diagnostic.collector: Collector thread stopped.
 2026-08-18 16:13:53,616 [INFO] pc_diagnostic: PC Diagnostic stopped.
+2026-08-18 18:26:52,048 [INFO] pc_diagnostic: Initializing PC Diagnostic...
+2026-08-18 18:26:52,053 [INFO] pc_diagnostic: Registered providers: ['psutil', 'smc']
+2026-08-18 18:26:52,054 [INFO] pc_diagnostic.collector: Collector thread started.
+2026-08-18 18:26:52,261 [INFO] pc_diagnostic: Interrupt received.
+2026-08-18 18:26:52,261 [INFO] pc_diagnostic.collector: Stopping collector thread...
+2026-08-18 18:26:52,817 [INFO] pc_diagnostic.collector: Collector thread stopped.
+2026-08-18 18:26:52,818 [INFO] pc_diagnostic: PC Diagnostic stopped.
