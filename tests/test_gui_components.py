@@ -194,6 +194,33 @@ class TestGuiComponents(unittest.TestCase):
             self.assertEqual(procs_card.table.item(0, 2).text(), "24.5%")
             self.assertEqual(procs_card.table.item(0, 3).text(), "250 MB")
 
+    def test_top_processes_preview_pairs_cpu_and_memory_readings(self) -> None:
+        procs_card = TopProcessesPreview()
+        readings = [
+            MetricReading(
+                metric="process.cpu_percent",
+                value=78.0,
+                unit=MetricUnit.PERCENT,
+                source="test",
+                tags={"type": "cpu_top", "pid": "60359", "name": "python3.13"},
+            ),
+            MetricReading(
+                metric="process.memory.used",
+                value=481427456.0,
+                unit=MetricUnit.BYTES,
+                source="test",
+                tags={"type": "cpu_top", "pid": "60359", "name": "python3.13"},
+            ),
+        ]
+
+        procs_card.update_snapshot(Snapshot(timestamp=time.time(), readings=readings))
+
+        if PYSIDE6_AVAILABLE:
+            self.assertEqual(procs_card.table.item(0, 0).text(), "60359")
+            self.assertEqual(procs_card.table.item(0, 2).text(), "78.0%")
+            self.assertEqual(procs_card.table.item(0, 3).text(), "459.1 MB")
+            self.assertEqual(procs_card.table.item(1, 0).text(), "—")
+
 
 if __name__ == "__main__":
     unittest.main()

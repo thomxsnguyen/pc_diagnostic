@@ -129,7 +129,12 @@ class ThemeManager:
         #top_header {{
             background-color: {t.bg_header};
             border-bottom: 1px solid {t.border_subtle};
-            padding: 8px 16px;
+        }}
+
+        #header_controls {{
+            background-color: {t.bg_input};
+            border: 1px solid {t.border_subtle};
+            border-radius: 6px;
         }}
 
         #app_title {{
@@ -215,35 +220,71 @@ class ThemeManager:
 
         /* --- Status Indicators & Badges --- */
         QLabel.status_active {{
-            background-color: {t.bg_card_hover};
+            background-color: transparent;
             color: {t.status_normal};
-            border: 1px solid {t.border_card};
-            border-radius: 4px;
-            padding: 3px 10px;
+            border: none;
+            padding: 3px 9px;
             font-size: 11px;
             font-weight: 700;
             letter-spacing: 0.5px;
         }}
 
         QLabel.status_stale {{
-            background-color: {t.bg_card_hover};
+            background-color: transparent;
             color: {t.status_critical};
-            border: 1px solid {t.border_card};
-            border-radius: 4px;
-            padding: 3px 10px;
+            border: none;
+            padding: 3px 9px;
             font-size: 11px;
             font-weight: 700;
             letter-spacing: 0.5px;
         }}
 
         QLabel.alert_badge {{
-            background-color: {t.bg_card_hover};
-            color: {t.status_warning};
-            border: 1px solid {t.border_card};
-            border-radius: 4px;
-            padding: 2px 8px;
+            background-color: transparent;
+            color: {t.text_muted};
+            border: none;
+            padding: 3px 9px;
             font-size: 11px;
             font-weight: 600;
+        }}
+
+        QLabel.alert_badge[active="true"] {{
+            color: {t.status_critical};
+            font-weight: 700;
+        }}
+
+        #cache_badge {{
+            background-color: transparent;
+            color: {t.text_secondary};
+            border: none;
+            padding: 3px 9px;
+            font-size: 11px;
+            font-weight: 600;
+        }}
+
+        QComboBox#theme_combo {{
+            background-color: transparent;
+            color: {t.text_primary};
+            border: none;
+            border-left: 1px solid {t.border_subtle};
+            padding: 3px 24px 3px 10px;
+            min-width: 92px;
+            font-size: 11px;
+            font-weight: 600;
+        }}
+
+        QComboBox#theme_combo:hover {{
+            background-color: {t.bg_card_hover};
+            border-radius: 4px;
+        }}
+
+        QComboBox#theme_combo QAbstractItemView {{
+            background-color: {t.bg_card};
+            color: {t.text_primary};
+            border: 1px solid {t.border_card};
+            selection-background-color: {t.bg_card_hover};
+            selection-color: {t.text_primary};
+            padding: 4px;
         }}
 
         /* --- Action Buttons --- */

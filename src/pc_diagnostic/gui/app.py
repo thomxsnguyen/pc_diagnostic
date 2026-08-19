@@ -113,8 +113,8 @@ class MainWindow(QMainWindow):
         header_widget = QWidget(self)
         header_widget.setObjectName("top_header")
         header_layout = QHBoxLayout(header_widget)
-        header_layout.setContentsMargins(16, 10, 16, 10)
-        header_layout.setSpacing(12)
+        header_layout.setContentsMargins(16, 8, 16, 8)
+        header_layout.setSpacing(10)
 
         # Title & Version Badge
         title_label = QLabel("PC DIAGNOSTIC")
@@ -127,29 +127,37 @@ class MainWindow(QMainWindow):
 
         header_layout.addStretch()
 
+        status_controls = QWidget(header_widget)
+        status_controls.setObjectName("header_controls")
+        status_layout = QHBoxLayout(status_controls)
+        status_layout.setContentsMargins(4, 3, 4, 3)
+        status_layout.setSpacing(4)
+
         # Collector Status Indicator Badge
         self.status_badge = QLabel("ACTIVE")
         self.status_badge.setProperty("class", "status_active")
-        header_layout.addWidget(self.status_badge)
+        status_layout.addWidget(self.status_badge)
 
         # Cache Health Fill Indicator
         self.cache_badge = QLabel("Cache: 0/300")
-        self.cache_badge.setStyleSheet(
-            "font-size: 11px; font-weight: 600; padding: 2px 8px;"
-        )
-        header_layout.addWidget(self.cache_badge)
+        self.cache_badge.setObjectName("cache_badge")
+        status_layout.addWidget(self.cache_badge)
 
         # Active Alerts Badge
         self.alert_badge = QLabel("0 Alerts")
         self.alert_badge.setProperty("class", "alert_badge")
-        header_layout.addWidget(self.alert_badge)
+        self.alert_badge.setProperty("active", False)
+        status_layout.addWidget(self.alert_badge)
 
         # Theme Switcher Selector
         self.theme_combo = QComboBox()
+        self.theme_combo.setObjectName("theme_combo")
         self.theme_combo.addItem("OLED Stealth", ThemeMode.OLED_STEALTH)
         self.theme_combo.addItem("Clean Light", ThemeMode.CLEAN_LIGHT)
         self.theme_combo.currentIndexChanged.connect(self._on_theme_changed)
-        header_layout.addWidget(self.theme_combo)
+        status_layout.addWidget(self.theme_combo)
+
+        header_layout.addWidget(status_controls)
 
         return header_widget
 
@@ -204,16 +212,12 @@ class MainWindow(QMainWindow):
             self.alert_badge.setText(
                 f"{count} Active Alert{'s' if count > 1 else ''}"
             )
-            self.alert_badge.setStyleSheet(
-                "background-color: #FF1744; color: #FFFFFF; font-weight: 700; "
-                "border-radius: 4px; padding: 2px 8px; font-size: 11px;"
-            )
+            self.alert_badge.setProperty("active", True)
         else:
             self.alert_badge.setText("0 Alerts")
-            self.alert_badge.setStyleSheet(
-                "background-color: #1C1F24; color: #A6ABB3; font-weight: 600; "
-                "border-radius: 4px; padding: 2px 8px; font-size: 11px;"
-            )
+            self.alert_badge.setProperty("active", False)
+        self.alert_badge.style().unpolish(self.alert_badge)
+        self.alert_badge.style().polish(self.alert_badge)
 
     def _on_collector_status(self, is_healthy: bool) -> None:
         """Update the header collector status badge."""

@@ -98,12 +98,33 @@ class TopProcessesPreview(QFrame):
         ):
             return
 
+        memory_by_pid = {
+            r.tags.get("pid", "0"): float(r.value)
+            for r in snapshot.readings
+            if r.metric == "process.memory.used"
+            and r.tags
+            and r.tags.get("type") == "cpu_top"
+        }
+
         cpu_procs = []
+        seen_pids: set[str] = set()
         for r in snapshot.readings:
-            if r.tags and r.tags.get("type") == "cpu_top":
+            if (
+                r.metric in {"process.cpu_percent", "process.cpu"}
+                and r.tags
+                and r.tags.get("type") == "cpu_top"
+            ):
                 pid = r.tags.get("pid", "0")
+                if pid in seen_pids:
+                    continue
+                seen_pids.add(pid)
                 name = r.tags.get("name", "Unknown")
-                mem_str = r.tags.get("mem_str", "—")
+                memory_bytes = memory_by_pid.get(pid)
+                mem_str = (
+                    self._format_memory(memory_bytes)
+                    if memory_bytes is not None
+                    else r.tags.get("mem_str", "—")
+                )
                 cpu_val = f"{r.value:.1f}%"
                 cpu_procs.append((pid, name, cpu_val, mem_str))
 
@@ -118,6 +139,16 @@ class TopProcessesPreview(QFrame):
             else:
                 for col in range(4):
                     self._set_item(row, col, "—")
+
+    @staticmethod
+    def _format_memory(value: float) -> str:
+        """Format a process RSS byte count for the compact preview table."""
+        size = max(0.0, value)
+        for unit in ("B", "KB", "MB", "GB", "TB"):
+            if size < 1024.0 or unit == "TB":
+                return f"{size:.1f} {unit}"
+            size /= 1024.0
+        return f"{size:.1f} TB"
 
     def _set_item(
         self, row: int, col: int, text: str, color: str | None = None
