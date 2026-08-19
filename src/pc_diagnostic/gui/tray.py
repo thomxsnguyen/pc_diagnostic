@@ -106,9 +106,15 @@ if PYSIDE6_AVAILABLE:
                     "thermal.cpu.package_temp",
                 ),
             )
-            self.cpu_label.setText(f"CPU  {cpu:.0f}%" if cpu is not None else "CPU  N/A")
-            self.ram_label.setText(f"RAM  {ram:.0f}%" if ram is not None else "RAM  N/A")
-            self.gpu_label.setText(f"GPU  {gpu:.0f}%" if gpu is not None else "GPU  N/A")
+            self.cpu_label.setText(
+                f"CPU  {cpu:.0f}%" if cpu is not None else "CPU  N/A"
+            )
+            self.ram_label.setText(
+                f"RAM  {ram:.0f}%" if ram is not None else "RAM  N/A"
+            )
+            self.gpu_label.setText(
+                f"GPU  {gpu:.0f}%" if gpu is not None else "GPU  N/A"
+            )
             self.temp_label.setText(
                 f"TEMP {temp:.0f}°C" if temp is not None else "TEMP N/A"
             )
@@ -128,7 +134,7 @@ if PYSIDE6_AVAILABLE:
             else:
                 self.process_label.setText("Top process: N/A")
 
-        def mousePressEvent(self, event: QMouseEvent) -> None:
+        def mousePressEvent(self, event: QMouseEvent) -> None:  # noqa: N802
             if event.button() == Qt.MouseButton.LeftButton:
                 self._drag_offset = (
                     event.globalPosition().toPoint() - self.frameGeometry().topLeft()
@@ -137,7 +143,7 @@ if PYSIDE6_AVAILABLE:
                 return
             super().mousePressEvent(event)
 
-        def mouseMoveEvent(self, event: QMouseEvent) -> None:
+        def mouseMoveEvent(self, event: QMouseEvent) -> None:  # noqa: N802
             if (
                 self._drag_offset is not None
                 and event.buttons() & Qt.MouseButton.LeftButton
@@ -147,7 +153,7 @@ if PYSIDE6_AVAILABLE:
                 return
             super().mouseMoveEvent(event)
 
-        def mouseReleaseEvent(self, event: QMouseEvent) -> None:
+        def mouseReleaseEvent(self, event: QMouseEvent) -> None:  # noqa: N802
             self._drag_offset = None
             super().mouseReleaseEvent(event)
 
@@ -203,7 +209,9 @@ if PYSIDE6_AVAILABLE:
             self.tray_icon.show()
             return True
 
-        def eventFilter(self, watched: QObject, event: QEvent) -> bool:
+        def eventFilter(  # noqa: N802
+            self, watched: QObject, event: QEvent
+        ) -> bool:
             if (
                 watched is self.main_window
                 and event.type() == QEvent.Type.Close
@@ -334,4 +342,4 @@ else:
             return False
 
 
-__all__ = ["MiniHud", "PYSIDE6_AVAILABLE", "TrayManager"]
+__all__ = ["PYSIDE6_AVAILABLE", "MiniHud", "TrayManager"]

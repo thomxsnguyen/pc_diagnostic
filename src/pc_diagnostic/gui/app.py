@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 import sys
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 
 from pc_diagnostic.gui.bridge import PYSIDE6_AVAILABLE, TelemetryBridge
 from pc_diagnostic.gui.theme import ThemeManager, ThemeMode
@@ -250,7 +250,7 @@ def run_gui(
         logger.error("PySide6 is not installed. Cannot start GUI.")
         return 1
 
-    app = QApplication.instance() or QApplication(sys.argv)
+    app = cast(QApplication | None, QApplication.instance()) or QApplication(sys.argv)
     app.setApplicationName("PC Diagnostic")
 
     theme_manager = ThemeManager(theme_mode)

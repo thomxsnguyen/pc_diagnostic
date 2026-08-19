@@ -1,3 +1,4 @@
+# ruff: noqa: E501 - Inno Setup directives must remain single physical lines.
 from __future__ import annotations
 
 import platform

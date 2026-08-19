@@ -34,8 +34,8 @@ def app_plist() -> dict[str, object]:
 
 
 def _paint_icon(path: Path, size: int) -> None:
-    from PySide6.QtCore import QRect, Qt
-    from PySide6.QtGui import QColor, QFont, QImage, QPainter
+    from PySide6.QtCore import QPointF, QRect, Qt
+    from PySide6.QtGui import QColor, QImage, QPainter, QPolygonF
 
     image = QImage(size, size, QImage.Format.Format_ARGB32)
     image.fill(Qt.GlobalColor.transparent)
@@ -49,12 +49,22 @@ def _paint_icon(path: Path, size: int) -> None:
         size // 5,
         size // 5,
     )
-    font = QFont("Sans Serif", max(8, size // 3), QFont.Weight.Bold)
-    painter.setFont(font)
-    painter.setPen(QColor("#F0F6FC"))
-    painter.drawText(image.rect(), Qt.AlignmentFlag.AlignCenter, "PC")
+    painter.setPen(Qt.PenStyle.NoPen)
+    painter.setBrush(QColor("#F0F6FC"))
+    painter.drawPolygon(
+        QPolygonF(
+            [
+                QPointF(size * 0.55, size * 0.16),
+                QPointF(size * 0.28, size * 0.55),
+                QPointF(size * 0.47, size * 0.55),
+                QPointF(size * 0.38, size * 0.84),
+                QPointF(size * 0.72, size * 0.43),
+                QPointF(size * 0.52, size * 0.43),
+            ]
+        )
+    )
     painter.end()
-    if not image.save(str(path), "PNG"):
+    if not image.save(str(path)):
         raise RuntimeError(f"Could not create icon image: {path}")
 
 
