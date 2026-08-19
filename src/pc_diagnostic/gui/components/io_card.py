@@ -44,6 +44,7 @@ class StorageNetworkCard(QFrame):
         if PYSIDE6_AVAILABLE:
             super().__init__(parent)
             self.setProperty("class", "card")
+            self.setObjectName("overview_io_card")
 
         self._init_ui()
 
@@ -60,28 +61,29 @@ class StorageNetworkCard(QFrame):
         title.setObjectName("overview_section_title")
         layout.addWidget(title)
 
+        subtitle = QLabel("Disk capacity and live transfer rates")
+        subtitle.setObjectName("overview_section_subtitle")
+        layout.addWidget(subtitle)
+
         grid = QGridLayout()
         grid.setSpacing(12)
 
         # --- Storage Section ---
         lbl_storage_hdr = QLabel("Primary Disk")
-        lbl_storage_hdr.setStyleSheet("font-weight: 700; color: #ECEEF1;")
+        lbl_storage_hdr.setObjectName("overview_group_title")
         self.lbl_storage_used = QLabel("Used: 0 GB")
-        self.lbl_storage_used.setStyleSheet("color: #A6ABB3; font-size: 11px;")
+        self.lbl_storage_used.setObjectName("overview_detail_label")
 
         self.storage_bar = QProgressBar()
+        self.storage_bar.setObjectName("overview_storage_bar")
         self.storage_bar.setRange(0, 100)
         self.storage_bar.setValue(0)
 
         storage_rates_layout = QHBoxLayout()
         self.lbl_disk_read = QLabel("Read: 0.0 MB/s")
-        self.lbl_disk_read.setStyleSheet(
-            "color: #00E676; font-size: 12px; font-weight: 600;"
-        )
+        self.lbl_disk_read.setObjectName("overview_rate_secondary")
         self.lbl_disk_write = QLabel("Write: 0.0 MB/s")
-        self.lbl_disk_write.setStyleSheet(
-            "color: #00B0FF; font-size: 12px; font-weight: 600;"
-        )
+        self.lbl_disk_write.setObjectName("overview_rate_primary")
         storage_rates_layout.addWidget(self.lbl_disk_read)
         storage_rates_layout.addWidget(self.lbl_disk_write)
 
@@ -92,25 +94,21 @@ class StorageNetworkCard(QFrame):
 
         # Divider
         divider = QFrame()
+        divider.setObjectName("overview_section_divider")
         divider.setFrameShape(QFrame.Shape.HLine)
-        divider.setStyleSheet("background-color: #24272D; max-height: 1px;")
         grid.addWidget(divider, 3, 0, 1, 2)
 
         # --- Network Section ---
         lbl_net_hdr = QLabel("Network Bandwidth")
-        lbl_net_hdr.setStyleSheet("font-weight: 700; color: #ECEEF1;")
+        lbl_net_hdr.setObjectName("overview_group_title")
         self.lbl_net_rates = QLabel("Active")
-        self.lbl_net_rates.setStyleSheet("color: #A6ABB3; font-size: 11px;")
+        self.lbl_net_rates.setObjectName("overview_detail_label")
 
         net_rates_layout = QHBoxLayout()
         self.lbl_net_rx = QLabel("Down: 0.0 KB/s")
-        self.lbl_net_rx.setStyleSheet(
-            "color: #FFD600; font-size: 12px; font-weight: 600;"
-        )
+        self.lbl_net_rx.setObjectName("overview_rate_secondary")
         self.lbl_net_tx = QLabel("Up: 0.0 KB/s")
-        self.lbl_net_tx.setStyleSheet(
-            "color: #FF9100; font-size: 12px; font-weight: 600;"
-        )
+        self.lbl_net_tx.setObjectName("overview_rate_primary")
         net_rates_layout.addWidget(self.lbl_net_rx)
         net_rates_layout.addWidget(self.lbl_net_tx)
 

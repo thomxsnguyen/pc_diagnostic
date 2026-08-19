@@ -93,6 +93,7 @@ class OverviewView(QWidget):
             return
 
         self.scroll_area = QScrollArea(self)
+        self.scroll_area.setObjectName("overview_scroll")
         self.scroll_area.setWidgetResizable(True)
         self.scroll_area.setHorizontalScrollBarPolicy(
             Qt.ScrollBarPolicy.ScrollBarAlwaysOff
@@ -100,13 +101,12 @@ class OverviewView(QWidget):
         self.scroll_area.setVerticalScrollBarPolicy(
             Qt.ScrollBarPolicy.ScrollBarAlwaysOff
         )
-        self.scroll_area.setStyleSheet("background-color: transparent; border: none;")
 
         container = QWidget()
         container.setObjectName("overview_root")
         self.content_layout = QVBoxLayout(container)
-        self.content_layout.setContentsMargins(20, 14, 20, 16)
-        self.content_layout.setSpacing(12)
+        self.content_layout.setContentsMargins(24, 20, 24, 24)
+        self.content_layout.setSpacing(16)
 
         # 1. Top System Info Banner Card
         self.header_card = self._build_header_card()
@@ -122,7 +122,7 @@ class OverviewView(QWidget):
 
         # 4. Bottom Row: Storage & Network I/O + Top Processes
         self.bottom_layout = QHBoxLayout()
-        self.bottom_layout.setSpacing(12)
+        self.bottom_layout.setSpacing(16)
 
         self.io_card = StorageNetworkCard(self)
         self.procs_card = TopProcessesPreview(self)
@@ -245,6 +245,7 @@ class OverviewView(QWidget):
         """Create the real-time telemetry history chart card."""
         card = QFrame(self)
         card.setProperty("class", "card")
+        card.setObjectName("overview_chart_card")
         layout = QVBoxLayout(card)
         layout.setContentsMargins(16, 14, 16, 14)
         layout.setSpacing(8)

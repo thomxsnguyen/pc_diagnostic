@@ -40,44 +40,41 @@ class FansVoltagesCard(QFrame):
         layout.setSpacing(12)
 
         # Title
-        title = QLabel("COOLING FANS & VOLTAGE RAILS")
-        title.setProperty("class", "card_title")
-        title.setStyleSheet("font-size: 13px; font-weight: 700; color: #A6ABB3;")
+        title = QLabel("Cooling and power")
+        title.setObjectName("sensors_section_title")
         layout.addWidget(title)
+
+        subtitle = QLabel("Fan speeds and monitored voltage rails")
+        subtitle.setObjectName("sensors_section_subtitle")
+        layout.addWidget(subtitle)
 
         # --- Section A: Fans ---
         lbl_fans_hdr = QLabel("Cooling Fans")
-        lbl_fans_hdr.setStyleSheet("font-weight: 700; color: #ECEEF1; font-size: 12px;")
+        lbl_fans_hdr.setObjectName("sensors_group_title")
         layout.addWidget(lbl_fans_hdr)
 
         self.fans_container = QVBoxLayout()
         self.fans_container.setSpacing(6)
         self.lbl_no_fans = QLabel("Passive Cooling / No active fans detected")
-        self.lbl_no_fans.setStyleSheet(
-            "color: #6F7680; font-size: 11px; font-style: italic;"
-        )
+        self.lbl_no_fans.setObjectName("sensors_empty_state")
         self.fans_container.addWidget(self.lbl_no_fans)
         layout.addLayout(self.fans_container)
 
         # Divider
         divider = QFrame()
+        divider.setObjectName("sensors_divider")
         divider.setFrameShape(QFrame.Shape.HLine)
-        divider.setStyleSheet("background-color: #24272D; max-height: 1px;")
         layout.addWidget(divider)
 
         # --- Section B: Voltages ---
         lbl_volts_hdr = QLabel("Power Rails")
-        lbl_volts_hdr.setStyleSheet(
-            "font-weight: 700; color: #ECEEF1; font-size: 12px;"
-        )
+        lbl_volts_hdr.setObjectName("sensors_group_title")
         layout.addWidget(lbl_volts_hdr)
 
         self.volts_grid = QGridLayout()
         self.volts_grid.setSpacing(8)
         self.lbl_no_volts = QLabel("Voltage rails monitored via LHM on Windows")
-        self.lbl_no_volts.setStyleSheet(
-            "color: #6F7680; font-size: 11px; font-style: italic;"
-        )
+        self.lbl_no_volts.setObjectName("sensors_empty_state")
         self.volts_grid.addWidget(self.lbl_no_volts, 0, 0, 1, 2)
         layout.addLayout(self.volts_grid)
 

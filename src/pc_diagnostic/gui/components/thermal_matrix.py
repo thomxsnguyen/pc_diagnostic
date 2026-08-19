@@ -43,17 +43,17 @@ class ThermalMatrixWidget(QFrame):
         layout.setContentsMargins(16, 14, 16, 14)
         layout.setSpacing(10)
 
-        title = QLabel("HARDWARE THERMAL MATRIX")
-        title.setProperty("class", "card_title")
-        title.setStyleSheet("font-size: 13px; font-weight: 700; color: #A6ABB3;")
+        title = QLabel("Thermal sensors")
+        title.setObjectName("sensors_section_title")
         layout.addWidget(title)
 
-        subtitle = QLabel("Monitored via macOS SMC/HID or Windows LibreHardwareMonitor")
-        subtitle.setStyleSheet("color: #6F7680; font-size: 11px;")
+        subtitle = QLabel("Current and session temperature range")
+        subtitle.setObjectName("sensors_section_subtitle")
         layout.addWidget(subtitle)
 
         # Table Widget
         self.table = QTableWidget(0, 6)
+        self.table.setObjectName("sensors_thermal_table")
         self.table.setHorizontalHeaderLabels(
             ["Group", "Sensor Name", "Current", "Min", "Max", "Status"]
         )
@@ -79,10 +79,6 @@ class ThermalMatrixWidget(QFrame):
         self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         self.table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         self.table.setShowGrid(False)
-        self.table.setStyleSheet(
-            "background-color: transparent; border: none; font-size: 11px;"
-        )
-
         layout.addWidget(self.table)
 
     def _determine_group_and_name(

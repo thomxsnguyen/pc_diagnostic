@@ -305,7 +305,8 @@ class ThemeManager:
         }}
 
         /* --- AI Studio --- */
-        #studio_page_title, #overview_page_title, #process_page_title {{
+        #studio_page_title, #overview_page_title, #process_page_title,
+        #sensors_page_title {{
             background-color: transparent;
             color: {t.text_primary};
             font-size: 18px;
@@ -315,13 +316,15 @@ class ThemeManager:
         #studio_page_subtitle, #studio_section_subtitle,
         #overview_page_subtitle, #overview_section_subtitle,
         #process_page_subtitle, #process_section_subtitle,
+        #sensors_page_subtitle, #sensors_section_subtitle,
         #recommendation_categories {{
             background-color: transparent;
             color: {t.text_secondary};
             font-size: 11px;
         }}
 
-        #studio_section_title, #overview_section_title, #process_section_title {{
+        #studio_section_title, #overview_section_title, #process_section_title,
+        #sensors_section_title {{
             background-color: transparent;
             color: {t.text_primary};
             font-size: 13px;
@@ -366,7 +369,15 @@ class ThemeManager:
             background-color: transparent;
         }}
 
+        QScrollArea#overview_scroll {{
+            background-color: transparent;
+            border: none;
+        }}
+
         QWidget#overview_root QFrame.card {{
+            background-color: {t.bg_card};
+            border: 1px solid {t.border_card};
+            border-radius: 6px;
             padding: 0;
         }}
 
@@ -392,6 +403,49 @@ class ThemeManager:
             color: {t.border_subtle};
             background-color: {t.border_subtle};
             max-width: 1px;
+        }}
+
+        #overview_group_title {{
+            color: {t.text_primary};
+            font-size: 12px;
+            font-weight: 700;
+        }}
+
+        #overview_detail_label {{
+            color: {t.text_secondary};
+            font-size: 11px;
+        }}
+
+        #overview_rate_primary, #overview_rate_secondary {{
+            font-size: 12px;
+            font-weight: 600;
+        }}
+
+        #overview_rate_primary {{
+            color: {t.accent_primary};
+        }}
+
+        #overview_rate_secondary {{
+            color: {t.accent_secondary};
+        }}
+
+        #overview_section_divider {{
+            color: {t.border_subtle};
+            background-color: {t.border_subtle};
+            max-height: 1px;
+        }}
+
+        QProgressBar#overview_storage_bar {{
+            background-color: {t.bg_input};
+            border: 1px solid {t.border_subtle};
+            min-height: 12px;
+            max-height: 12px;
+        }}
+
+        QTableWidget#overview_processes_table {{
+            background-color: {t.bg_input};
+            border: 1px solid {t.border_subtle};
+            font-size: 11px;
         }}
 
         /* --- Processes --- */
@@ -439,6 +493,65 @@ class ThemeManager:
         QPushButton#process_pause[paused="true"] {{
             color: {t.status_warning};
             border-color: {t.status_warning};
+        }}
+
+        /* --- Sensors --- */
+        QScrollArea#sensors_scroll {{
+            background-color: transparent;
+            border: none;
+        }}
+
+        QWidget#sensors_root QLabel {{
+            background-color: transparent;
+        }}
+
+        #sensors_page_title, #sensors_page_subtitle,
+        #sensors_section_title, #sensors_section_subtitle {{
+            background-color: transparent;
+        }}
+
+        #sensors_count {{
+            color: {t.text_secondary};
+            border: 1px solid {t.border_card};
+            border-radius: 4px;
+            padding: 3px 9px;
+            font-size: 11px;
+            font-weight: 600;
+        }}
+
+        #sensors_group_title {{
+            color: {t.text_primary};
+            font-size: 12px;
+            font-weight: 700;
+        }}
+
+        #sensors_empty_state {{
+            color: {t.text_muted};
+            font-size: 11px;
+        }}
+
+        #sensor_core_name {{
+            color: {t.text_secondary};
+            font-size: 11px;
+            font-weight: 600;
+        }}
+
+        #sensor_core_value {{
+            color: {t.text_primary};
+            font-size: 11px;
+            font-weight: 700;
+        }}
+
+        #sensors_divider {{
+            color: {t.border_subtle};
+            background-color: {t.border_subtle};
+            max-height: 1px;
+        }}
+
+        QTableWidget#sensors_thermal_table {{
+            background-color: {t.bg_input};
+            border: 1px solid {t.border_subtle};
+            font-size: 11px;
         }}
 
         QHeaderView::section {{

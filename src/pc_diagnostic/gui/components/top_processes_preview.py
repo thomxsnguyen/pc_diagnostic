@@ -26,6 +26,7 @@ class TopProcessesPreview(QFrame):
         if PYSIDE6_AVAILABLE:
             super().__init__(parent)
             self.setProperty("class", "card")
+            self.setObjectName("overview_processes_card")
 
         self._init_ui()
 
@@ -42,8 +43,13 @@ class TopProcessesPreview(QFrame):
         title.setObjectName("overview_section_title")
         layout.addWidget(title)
 
+        subtitle = QLabel("Highest current CPU usage")
+        subtitle.setObjectName("overview_section_subtitle")
+        layout.addWidget(subtitle)
+
         # Table Widget
         self.table = QTableWidget(5, 4)
+        self.table.setObjectName("overview_processes_table")
         self.table.setHorizontalHeaderLabels(["PID", "Process Name", "CPU %", "RAM"])
         self.table.verticalHeader().setVisible(False)
         self.table.horizontalHeader().setSectionResizeMode(
@@ -61,10 +67,6 @@ class TopProcessesPreview(QFrame):
         self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         self.table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         self.table.setShowGrid(False)
-        self.table.setStyleSheet(
-            "background-color: transparent; border: none; font-size: 11px;"
-        )
-
         # Populate empty placeholder rows
         for row in range(5):
             for col in range(4):

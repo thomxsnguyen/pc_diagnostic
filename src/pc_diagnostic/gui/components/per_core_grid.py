@@ -39,11 +39,9 @@ class CoreCell(QWidget):
 
         header_row = QHBoxLayout()
         self.lbl_name = QLabel(f"Core {self.core_idx:02d}")
-        self.lbl_name.setStyleSheet(
-            "font-size: 11px; font-weight: 600; color: #A6ABB3;"
-        )
+        self.lbl_name.setObjectName("sensor_core_name")
         self.lbl_val = QLabel("0.0%")
-        self.lbl_val.setStyleSheet("font-size: 11px; font-weight: 700; color: #ECEEF1;")
+        self.lbl_val.setObjectName("sensor_core_value")
 
         header_row.addWidget(self.lbl_name)
         header_row.addStretch()
@@ -103,18 +101,14 @@ class PerCoreGridWidget(QFrame):
 
         # Header Row
         header_layout = QHBoxLayout()
-        title = QLabel("PER-CORE CPU UTILIZATION")
-        title.setProperty("class", "card_title")
-        title.setStyleSheet("font-size: 13px; font-weight: 700; color: #A6ABB3;")
+        title = QLabel("CPU cores")
+        title.setObjectName("sensors_section_title")
         header_layout.addWidget(title)
 
         header_layout.addStretch()
 
         self.lbl_core_count = QLabel("0 Cores")
-        self.lbl_core_count.setStyleSheet(
-            "background-color: #1C1F24; color: #93C5FD; "
-            "border-radius: 4px; padding: 2px 8px; font-size: 11px; font-weight: 600;"
-        )
+        self.lbl_core_count.setObjectName("sensors_count")
         header_layout.addWidget(self.lbl_core_count)
         layout.addLayout(header_layout)
 

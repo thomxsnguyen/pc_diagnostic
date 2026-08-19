@@ -15,7 +15,9 @@ if TYPE_CHECKING:
 try:
     from PySide6.QtCore import Qt
     from PySide6.QtWidgets import (
+        QFrame,
         QHBoxLayout,
+        QLabel,
         QScrollArea,
         QVBoxLayout,
         QWidget,
@@ -47,16 +49,32 @@ class SensorsView(QWidget):
             return
 
         scroll = QScrollArea(self)
+        scroll.setObjectName("sensors_scroll")
         scroll.setWidgetResizable(True)
         scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        scroll.setStyleSheet("background-color: transparent; border: none;")
 
         container = QWidget()
+        container.setObjectName("sensors_root")
         main_vbox = QVBoxLayout(container)
-        main_vbox.setContentsMargins(20, 16, 20, 20)
+        main_vbox.setContentsMargins(24, 20, 24, 24)
         main_vbox.setSpacing(16)
 
-        # Main Layout: Two Columns (Left: Per-Core + Fans/Volts; Right: Thermal Matrix)
+        # 1. Page header
+        header = QFrame(container)
+        header.setProperty("class", "card")
+        header_layout = QVBoxLayout(header)
+        header_layout.setContentsMargins(18, 14, 18, 14)
+        header_layout.setSpacing(4)
+
+        title = QLabel("Sensors")
+        title.setObjectName("sensors_page_title")
+        subtitle = QLabel("Live hardware, thermal, cooling, and power telemetry")
+        subtitle.setObjectName("sensors_page_subtitle")
+        header_layout.addWidget(title)
+        header_layout.addWidget(subtitle)
+        main_vbox.addWidget(header)
+
+        # 2. Sensor workspace
         columns_layout = QHBoxLayout()
         columns_layout.setSpacing(16)
 
@@ -64,8 +82,8 @@ class SensorsView(QWidget):
         left_col = QVBoxLayout()
         left_col.setSpacing(16)
 
-        self.core_grid = PerCoreGridWidget(self)
-        self.fans_volts_card = FansVoltagesCard(self)
+        self.core_grid = PerCoreGridWidget(container)
+        self.fans_volts_card = FansVoltagesCard(container)
 
         left_col.addWidget(self.core_grid)
         left_col.addWidget(self.fans_volts_card)
@@ -75,7 +93,7 @@ class SensorsView(QWidget):
         right_col = QVBoxLayout()
         right_col.setSpacing(16)
 
-        self.thermal_matrix = ThermalMatrixWidget(self)
+        self.thermal_matrix = ThermalMatrixWidget(container)
         right_col.addWidget(self.thermal_matrix)
 
         columns_layout.addLayout(left_col, stretch=1)
