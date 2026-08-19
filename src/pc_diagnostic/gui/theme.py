@@ -305,7 +305,7 @@ class ThemeManager:
         }}
 
         /* --- AI Studio --- */
-        #studio_page_title, #overview_page_title {{
+        #studio_page_title, #overview_page_title, #process_page_title {{
             background-color: transparent;
             color: {t.text_primary};
             font-size: 18px;
@@ -314,13 +314,14 @@ class ThemeManager:
 
         #studio_page_subtitle, #studio_section_subtitle,
         #overview_page_subtitle, #overview_section_subtitle,
+        #process_page_subtitle, #process_section_subtitle,
         #recommendation_categories {{
             background-color: transparent;
             color: {t.text_secondary};
             font-size: 11px;
         }}
 
-        #studio_section_title, #overview_section_title {{
+        #studio_section_title, #overview_section_title, #process_section_title {{
             background-color: transparent;
             color: {t.text_primary};
             font-size: 13px;
@@ -391,6 +392,53 @@ class ThemeManager:
             color: {t.border_subtle};
             background-color: {t.border_subtle};
             max-width: 1px;
+        }}
+
+        /* --- Processes --- */
+        #process_page_title, #process_page_subtitle,
+        #process_section_title, #process_section_subtitle,
+        #process_stat_label, #process_stat_value, #process_count {{
+            background-color: transparent;
+        }}
+
+        #process_stat_label {{
+            color: {t.text_muted};
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 0.6px;
+        }}
+
+        #process_stat_value {{
+            color: {t.text_primary};
+            font-size: 12px;
+            font-weight: 600;
+        }}
+
+        #process_count {{
+            color: {t.text_secondary};
+            border: 1px solid {t.border_card};
+            border-radius: 4px;
+            padding: 4px 10px;
+            font-size: 11px;
+            font-weight: 600;
+        }}
+
+        QLineEdit#process_search {{
+            background-color: {t.bg_input};
+            color: {t.text_primary};
+            border: 1px solid {t.border_subtle};
+            border-radius: 4px;
+            padding: 7px 10px;
+            selection-background-color: {t.accent_primary};
+        }}
+
+        QLineEdit#process_search:focus {{
+            border-color: {t.border_accent};
+        }}
+
+        QPushButton#process_pause[paused="true"] {{
+            color: {t.status_warning};
+            border-color: {t.status_warning};
         }}
 
         QHeaderView::section {{

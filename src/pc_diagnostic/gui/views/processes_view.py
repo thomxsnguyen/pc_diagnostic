@@ -60,74 +60,86 @@ class ProcessesView(QWidget):
             return
 
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(20, 16, 20, 20)
-        layout.setSpacing(14)
+        layout.setContentsMargins(24, 20, 24, 24)
+        layout.setSpacing(16)
 
-        # 1. Top Summary Banner Card
+        # 1. Page status header
         banner_card = QFrame(self)
         banner_card.setProperty("class", "card")
         banner_layout = QHBoxLayout(banner_card)
-        banner_layout.setContentsMargins(16, 12, 16, 12)
-        banner_layout.setSpacing(20)
+        banner_layout.setContentsMargins(18, 14, 18, 14)
+        banner_layout.setSpacing(18)
 
-        # Left Info
         vbox_left = QVBoxLayout()
-        title = QLabel("PROCESS INSPECTOR")
-        title.setProperty("class", "card_title")
-        title.setStyleSheet("font-size: 14px; font-weight: 700; color: #ECEEF1;")
-        self.lbl_summary = QLabel("Monitoring active threads & task resources")
-        self.lbl_summary.setStyleSheet("color: #A6ABB3; font-size: 11px;")
+        vbox_left.setSpacing(4)
+        title = QLabel("Processes")
+        title.setObjectName("process_page_title")
+        self.lbl_summary = QLabel("Live process activity and resource usage")
+        self.lbl_summary.setObjectName("process_page_subtitle")
         vbox_left.addWidget(title)
         vbox_left.addWidget(self.lbl_summary)
-        banner_layout.addLayout(vbox_left, stretch=2)
+        banner_layout.addLayout(vbox_left, stretch=1)
 
-        # Middle Highlights
-        vbox_mid = QVBoxLayout()
-        self.lbl_top_cpu = QLabel("Top CPU: —")
-        self.lbl_top_cpu.setStyleSheet(
-            "color: #93C5FD; font-size: 12px; font-weight: 600;"
-        )
-        self.lbl_top_mem = QLabel("Top RAM: —")
-        self.lbl_top_mem.setStyleSheet(
-            "color: #A6ABB3; font-size: 12px; font-weight: 600;"
-        )
-        vbox_mid.addWidget(self.lbl_top_cpu)
-        vbox_mid.addWidget(self.lbl_top_mem)
-        banner_layout.addLayout(vbox_mid, stretch=2)
+        cpu_column = QVBoxLayout()
+        cpu_column.setSpacing(3)
+        cpu_caption = QLabel("TOP CPU")
+        cpu_caption.setObjectName("process_stat_label")
+        self.lbl_top_cpu = QLabel("—")
+        self.lbl_top_cpu.setObjectName("process_stat_value")
+        self.lbl_top_cpu.setMaximumWidth(210)
+        cpu_column.addWidget(cpu_caption)
+        cpu_column.addWidget(self.lbl_top_cpu)
+        banner_layout.addLayout(cpu_column)
 
-        # Right Action Buttons
+        memory_column = QVBoxLayout()
+        memory_column.setSpacing(3)
+        memory_caption = QLabel("TOP MEMORY")
+        memory_caption.setObjectName("process_stat_label")
+        self.lbl_top_mem = QLabel("—")
+        self.lbl_top_mem.setObjectName("process_stat_value")
+        self.lbl_top_mem.setMaximumWidth(210)
+        memory_column.addWidget(memory_caption)
+        memory_column.addWidget(self.lbl_top_mem)
+        banner_layout.addLayout(memory_column)
+
         self.btn_pause = QPushButton("Pause")
-        self.btn_pause.setStyleSheet(
-            "QPushButton { background-color: #1C1F24; color: #ECEEF1; "
-            "border: 1px solid #30343B; border-radius: 4px; padding: 6px 14px; "
-            "font-weight: 600; } "
-            "QPushButton:hover { background-color: #24272D; }"
-        )
+        self.btn_pause.setObjectName("process_pause")
+        self.btn_pause.setProperty("class", "secondary_btn")
+        self.btn_pause.setProperty("paused", False)
+        self.btn_pause.setMinimumWidth(92)
         self.btn_pause.clicked.connect(self._toggle_pause)
         banner_layout.addWidget(self.btn_pause, alignment=Qt.AlignmentFlag.AlignRight)
 
         layout.addWidget(banner_card)
 
-        # 2. Main Process Table Widget
-        self.process_table = ProcessTableWidget(self)
-        layout.addWidget(self.process_table, stretch=1)
+        # 2. Process workspace
+        table_card = QFrame(self)
+        table_card.setProperty("class", "card")
+        table_layout = QVBoxLayout(table_card)
+        table_layout.setContentsMargins(14, 14, 14, 14)
+        table_layout.setSpacing(10)
+
+        table_title = QLabel("Running processes")
+        table_title.setObjectName("process_section_title")
+        table_subtitle = QLabel("Search, sort, or right-click a process for actions")
+        table_subtitle.setObjectName("process_section_subtitle")
+        table_layout.addWidget(table_title)
+        table_layout.addWidget(table_subtitle)
+
+        self.process_table = ProcessTableWidget(table_card)
+        table_layout.addWidget(self.process_table, stretch=1)
+        layout.addWidget(table_card, stretch=1)
 
     def _toggle_pause(self) -> None:
         """Toggle live process table updating."""
         self._is_paused = not self._is_paused
         if self._is_paused:
             self.btn_pause.setText("Resume")
-            self.btn_pause.setStyleSheet(
-                "QPushButton { background-color: #FFD600; color: #0B0E14; "
-                "border-radius: 4px; padding: 6px 14px; font-weight: 700; }"
-            )
         else:
             self.btn_pause.setText("Pause")
-            self.btn_pause.setStyleSheet(
-                "QPushButton { background-color: #1C1F24; color: #ECEEF1; "
-                "border: 1px solid #30343B; border-radius: 4px; padding: 6px 14px; "
-                "font-weight: 600; }"
-            )
+        self.btn_pause.setProperty("paused", self._is_paused)
+        self.btn_pause.style().unpolish(self.btn_pause)
+        self.btn_pause.style().polish(self.btn_pause)
 
     def _on_snapshot(self, snapshot: Snapshot) -> None:
         """Extract top CPU and RAM processes from latest snapshot."""
@@ -152,9 +164,9 @@ class ProcessesView(QWidget):
                     )
 
         if top_cpu_name:
-            self.lbl_top_cpu.setText(f"Top CPU: {top_cpu_name} ({top_cpu_val:.1f}%)")
+            self.lbl_top_cpu.setText(f"{top_cpu_name} · {top_cpu_val:.1f}%")
         if top_mem_name:
-            self.lbl_top_mem.setText(f"Top RAM: {top_mem_name} ({top_mem_str})")
+            self.lbl_top_mem.setText(f"{top_mem_name} · {top_mem_str}")
 
     def _refresh_process_list(self) -> None:
         """Scan running system processes using psutil and feed to ProcessTableWidget."""

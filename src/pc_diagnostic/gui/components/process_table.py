@@ -73,21 +73,20 @@ class ProcessTableWidget(QWidget):
         toolbar.setSpacing(12)
 
         self.search_input = QLineEdit()
+        self.search_input.setObjectName("process_search")
         self.search_input.setPlaceholderText("Search processes by name or PID...")
         self.search_input.setClearButtonEnabled(True)
         self.search_input.textChanged.connect(self._on_search_changed)
         toolbar.addWidget(self.search_input, stretch=2)
 
         self.lbl_process_count = QLabel("0 Running")
-        self.lbl_process_count.setStyleSheet(
-            "background-color: #1C1F24; color: #93C5FD; "
-            "border-radius: 4px; padding: 4px 10px; font-size: 11px; font-weight: 600;"
-        )
+        self.lbl_process_count.setObjectName("process_count")
         toolbar.addWidget(self.lbl_process_count)
         layout.addLayout(toolbar)
 
         # Table Widget
         self.table = QTableWidget(0, 5)
+        self.table.setObjectName("process_table")
         self.table.setHorizontalHeaderLabels(
             ["PID", "Process Name", "CPU %", "Memory (MB)", "Status"]
         )
