@@ -8,6 +8,7 @@ dependencies = [
     "psutil>=5.9.0",
     "rich>=13.0.0",
     "crewai>=0.1.0",
+    "keyring>=25.0.0",
     "PySide6>=6.6.0",
     "pyqtgraph>=0.13.3",
 ]
