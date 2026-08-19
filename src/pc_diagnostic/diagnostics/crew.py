@@ -1,8 +1,23 @@
 import logging
 import os
-from typing import Any
+from collections.abc import Iterator
+from contextlib import contextmanager
+from typing import Any, Protocol
+
+from pc_diagnostic.credentials import (
+    PROVIDER_CREDENTIALS,
+    AIProvider,
+    CredentialService,
+    CredentialStorageUnavailableError,
+)
 
 logger = logging.getLogger(__name__)
+
+
+class CredentialTokenResolver(Protocol):
+    """Credential lookup boundary used by the diagnostic entry point."""
+
+    def get_token(self, provider: AIProvider) -> str | None: ...
 
 # Try to import CrewAI components for AI diagnostics
 try:
@@ -145,18 +160,73 @@ class LocalDiagnosticAnalyzer:
         return "\n".join(report_lines)
 
 
-def run_diagnosis(evidence_packet: dict[str, Any]) -> str:
+def _provider_from_environment() -> AIProvider | None:
+    """Preserve the existing environment-based provider detection order."""
+    for provider in AIProvider:
+        environment_variable = PROVIDER_CREDENTIALS[provider].environment_variable
+        if os.environ.get(environment_variable):
+            return provider
+    return None
+
+
+def _resolve_provider_token(
+    provider: AIProvider,
+    credential_service: CredentialTokenResolver,
+) -> str | None:
+    """Resolve a token from secure storage, then the existing environment."""
+    try:
+        stored_token = credential_service.get_token(provider)
+    except CredentialStorageUnavailableError:
+        logger.warning(
+            "Secure credential storage is unavailable; checking environment"
+        )
+    else:
+        if stored_token:
+            return stored_token
+
+    environment_variable = PROVIDER_CREDENTIALS[provider].environment_variable
+    return os.environ.get(environment_variable) or None
+
+
+@contextmanager
+def _temporary_provider_environment(
+    provider: AIProvider,
+    token: str,
+) -> Iterator[None]:
+    """Expose one provider token for a single CrewAI execution."""
+    environment_variable = PROVIDER_CREDENTIALS[provider].environment_variable
+    previous_value = os.environ.get(environment_variable)
+    os.environ[environment_variable] = token
+    try:
+        yield
+    finally:
+        if previous_value is None:
+            os.environ.pop(environment_variable, None)
+        else:
+            os.environ[environment_variable] = previous_value
+
+
+def run_diagnosis(
+    evidence_packet: dict[str, Any],
+    provider: AIProvider | None = None,
+    credential_service: CredentialTokenResolver | None = None,
+) -> str:
     """Main entry point to execute system diagnostics.
 
-    Attempts to use CrewAI if API key is present, otherwise falls back.
+    Resolve the selected provider from secure storage or the environment, then
+    attempt CrewAI. Fall back to local analysis when no credential is available
+    or the AI execution cannot complete.
     """
-    has_api_key = bool(
-        os.environ.get("OPENAI_API_KEY")
-        or os.environ.get("GEMINI_API_KEY")
-        or os.environ.get("ANTHROPIC_API_KEY")
-    )
+    selected_provider = provider or _provider_from_environment()
+    if not CREWAI_AVAILABLE or selected_provider is None:
+        return LocalDiagnosticAnalyzer().analyze(evidence_packet)
 
-    if CREWAI_AVAILABLE and has_api_key:
+    service = credential_service or CredentialService()
+    token = _resolve_provider_token(selected_provider, service)
+    if token is None:
+        return LocalDiagnosticAnalyzer().analyze(evidence_packet)
+
+    with _temporary_provider_environment(selected_provider, token):
         try:
             # Construct a text string representing the telemetry snapshot evidence
             evidence_str = (
@@ -213,10 +283,8 @@ def run_diagnosis(evidence_packet: dict[str, Any]) -> str:
             result = crew.kickoff()
             # crew.kickoff() can return a CrewOutput object; convert to string
             return str(result)
-        except Exception as e:
-            logger.warning(
-                f"CrewAI execution failed, falling back to local analysis: {e}"
-            )
+        except Exception:
+            logger.warning("CrewAI execution failed; falling back to local analysis")
 
     # Fallback to local rule engine
     analyzer = LocalDiagnosticAnalyzer()
