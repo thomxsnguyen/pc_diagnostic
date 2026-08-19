@@ -40,7 +40,7 @@ class FansVoltagesCard(QFrame):
         layout.setSpacing(12)
 
         # Title
-        title = QLabel("💨 COOLING FANS & VOLTAGE RAILS")
+        title = QLabel("COOLING FANS & VOLTAGE RAILS")
         title.setProperty("class", "card_title")
         title.setStyleSheet("font-size: 13px; font-weight: 700; color: #90A4AE;")
         layout.addWidget(title)

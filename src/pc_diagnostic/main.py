@@ -72,9 +72,9 @@ def main() -> None:
     parser.add_argument(
         "--theme",
         type=str,
-        choices=["cyberpunk_dark", "oled_stealth", "clean_light"],
-        default="cyberpunk_dark",
-        help="GUI color theme (default: cyberpunk_dark)",
+        choices=["oled_stealth", "clean_light"],
+        default="oled_stealth",
+        help="GUI color theme (default: oled_stealth)",
     )
     parser.add_argument(
         "--refresh-rate",

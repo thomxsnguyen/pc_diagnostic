@@ -56,7 +56,7 @@ class StorageNetworkCard(QFrame):
         layout.setSpacing(10)
 
         # Title
-        title = QLabel("💾 STORAGE & NETWORK I/O")
+        title = QLabel("STORAGE & NETWORK I/O")
         title.setProperty("class", "card_title")
         title.setStyleSheet("font-size: 13px; font-weight: 700; color: #90A4AE;")
         layout.addWidget(title)
@@ -75,11 +75,11 @@ class StorageNetworkCard(QFrame):
         self.storage_bar.setValue(0)
 
         storage_rates_layout = QHBoxLayout()
-        self.lbl_disk_read = QLabel("↓ Read: 0.0 MB/s")
+        self.lbl_disk_read = QLabel("Read: 0.0 MB/s")
         self.lbl_disk_read.setStyleSheet(
             "color: #00E676; font-size: 12px; font-weight: 600;"
         )
-        self.lbl_disk_write = QLabel("↑ Write: 0.0 MB/s")
+        self.lbl_disk_write = QLabel("Write: 0.0 MB/s")
         self.lbl_disk_write.setStyleSheet(
             "color: #00B0FF; font-size: 12px; font-weight: 600;"
         )
@@ -104,11 +104,11 @@ class StorageNetworkCard(QFrame):
         self.lbl_net_rates.setStyleSheet("color: #90A4AE; font-size: 11px;")
 
         net_rates_layout = QHBoxLayout()
-        self.lbl_net_rx = QLabel("↓ Down: 0.0 KB/s")
+        self.lbl_net_rx = QLabel("Down: 0.0 KB/s")
         self.lbl_net_rx.setStyleSheet(
             "color: #FFD600; font-size: 12px; font-weight: 600;"
         )
-        self.lbl_net_tx = QLabel("↑ Up: 0.0 KB/s")
+        self.lbl_net_tx = QLabel("Up: 0.0 KB/s")
         self.lbl_net_tx.setStyleSheet(
             "color: #FF9100; font-size: 12px; font-weight: 600;"
         )
@@ -134,10 +134,10 @@ class StorageNetworkCard(QFrame):
             if r.metric == "disk.used_bytes":
                 self.lbl_storage_used.setText(f"Used: {format_bytes_size(r.value)}")
             elif r.metric == "disk.read_bytes_per_sec":
-                self.lbl_disk_read.setText(f"↓ Read: {format_bytes_speed(r.value)}")
+                self.lbl_disk_read.setText(f"Read: {format_bytes_speed(r.value)}")
             elif r.metric == "disk.write_bytes_per_sec":
-                self.lbl_disk_write.setText(f"↑ Write: {format_bytes_speed(r.value)}")
+                self.lbl_disk_write.setText(f"Write: {format_bytes_speed(r.value)}")
             elif r.metric == "network.rx_bytes_per_sec":
-                self.lbl_net_rx.setText(f"↓ Down: {format_bytes_speed(r.value)}")
+                self.lbl_net_rx.setText(f"Down: {format_bytes_speed(r.value)}")
             elif r.metric == "network.tx_bytes_per_sec":
-                self.lbl_net_tx.setText(f"↑ Up: {format_bytes_speed(r.value)}")
+                self.lbl_net_tx.setText(f"Up: {format_bytes_speed(r.value)}")

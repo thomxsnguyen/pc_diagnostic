@@ -43,7 +43,7 @@ class ThermalMatrixWidget(QFrame):
         layout.setContentsMargins(16, 14, 16, 14)
         layout.setSpacing(10)
 
-        title = QLabel("🌡️ HARDWARE THERMAL MATRIX")
+        title = QLabel("HARDWARE THERMAL MATRIX")
         title.setProperty("class", "card_title")
         title.setStyleSheet("font-size: 13px; font-weight: 700; color: #90A4AE;")
         layout.addWidget(title)

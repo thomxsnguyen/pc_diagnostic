@@ -73,7 +73,7 @@ class ProcessTableWidget(QWidget):
         toolbar.setSpacing(12)
 
         self.search_input = QLineEdit()
-        self.search_input.setPlaceholderText("🔍 Search processes by name or PID...")
+        self.search_input.setPlaceholderText("Search processes by name or PID...")
         self.search_input.setClearButtonEnabled(True)
         self.search_input.textChanged.connect(self._on_search_changed)
         toolbar.addWidget(self.search_input, stretch=2)
@@ -92,21 +92,14 @@ class ProcessTableWidget(QWidget):
             ["PID", "Process Name", "CPU %", "Memory (MB)", "Status"]
         )
         self.table.verticalHeader().setVisible(False)
-        self.table.horizontalHeader().setSectionResizeMode(
-            1, QHeaderView.ResizeMode.Stretch
-        )
-        self.table.horizontalHeader().setSectionResizeMode(
-            0, QHeaderView.ResizeMode.ResizeToContents
-        )
-        self.table.horizontalHeader().setSectionResizeMode(
-            2, QHeaderView.ResizeMode.ResizeToContents
-        )
-        self.table.horizontalHeader().setSectionResizeMode(
-            3, QHeaderView.ResizeMode.ResizeToContents
-        )
-        self.table.horizontalHeader().setSectionResizeMode(
-            4, QHeaderView.ResizeMode.ResizeToContents
-        )
+        header = self.table.horizontalHeader()
+        header.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
+        for column, width in ((0, 80), (2, 85), (3, 110), (4, 90)):
+            header.setSectionResizeMode(column, QHeaderView.ResizeMode.Interactive)
+            self.table.setColumnWidth(column, width)
+        self.table.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Fixed)
+        self.table.verticalHeader().setDefaultSectionSize(28)
+        self.table.setWordWrap(False)
         self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.table.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
@@ -158,53 +151,60 @@ class ProcessTableWidget(QWidget):
             return
 
         self._is_updating = True
+        updates_enabled = self.table.updatesEnabled()
+        signals_blocked = self.table.blockSignals(True)
+        self.table.setUpdatesEnabled(False)
         self.table.setSortingEnabled(False)
 
-        current_row_count = self.table.rowCount()
-        target_row_count = len(procs)
+        try:
+            current_row_count = self.table.rowCount()
+            target_row_count = len(procs)
 
-        if current_row_count != target_row_count:
-            self.table.setRowCount(target_row_count)
+            if current_row_count != target_row_count:
+                self.table.setRowCount(target_row_count)
 
-        for row, (pid, name, cpu_pct, mem_mb, status) in enumerate(procs):
-            # PID
-            pid_item = NumericTableWidgetItem(pid, str(pid))
-            pid_item.setTextAlignment(
-                Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft
-            )
-            self.table.setItem(row, 0, pid_item)
+            for row, (pid, name, cpu_pct, mem_mb, status) in enumerate(procs):
+                # PID
+                pid_item = NumericTableWidgetItem(pid, str(pid))
+                pid_item.setTextAlignment(
+                    Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft
+                )
+                self.table.setItem(row, 0, pid_item)
 
-            # Name
-            name_item = QTableWidgetItem(name)
-            name_item.setTextAlignment(
-                Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft
-            )
-            self.table.setItem(row, 1, name_item)
+                # Name
+                name_item = QTableWidgetItem(name)
+                name_item.setTextAlignment(
+                    Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft
+                )
+                self.table.setItem(row, 1, name_item)
 
-            # CPU %
-            cpu_item = NumericTableWidgetItem(cpu_pct, f"{cpu_pct:.1f}%")
-            cpu_item.setTextAlignment(
-                Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignRight
-            )
-            self.table.setItem(row, 2, cpu_item)
+                # CPU %
+                cpu_item = NumericTableWidgetItem(cpu_pct, f"{cpu_pct:.1f}%")
+                cpu_item.setTextAlignment(
+                    Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignRight
+                )
+                self.table.setItem(row, 2, cpu_item)
 
-            # Memory (MB)
-            mem_item = NumericTableWidgetItem(mem_mb, f"{mem_mb:.1f} MB")
-            mem_item.setTextAlignment(
-                Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignRight
-            )
-            self.table.setItem(row, 3, mem_item)
+                # Memory (MB)
+                mem_item = NumericTableWidgetItem(mem_mb, f"{mem_mb:.1f} MB")
+                mem_item.setTextAlignment(
+                    Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignRight
+                )
+                self.table.setItem(row, 3, mem_item)
 
-            # Status
-            status_item = QTableWidgetItem(status.capitalize())
-            status_item.setTextAlignment(
-                Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignCenter
-            )
-            self.table.setItem(row, 4, status_item)
+                # Status
+                status_item = QTableWidgetItem(status.capitalize())
+                status_item.setTextAlignment(
+                    Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignCenter
+                )
+                self.table.setItem(row, 4, status_item)
 
-        self.table.setSortingEnabled(True)
-        self._apply_filter()
-        self._is_updating = False
+            self._apply_filter()
+        finally:
+            self.table.setSortingEnabled(True)
+            self.table.blockSignals(signals_blocked)
+            self.table.setUpdatesEnabled(updates_enabled)
+            self._is_updating = False
 
     def _show_context_menu(self, pos: Any) -> None:
         """Render right-click context menu for process management actions."""
@@ -230,8 +230,8 @@ class ProcessTableWidget(QWidget):
         proc_name = name_item.text()
 
         menu = QMenu(self)
-        action_term = menu.addAction(f"🛑 Terminate '{proc_name}' (SIGTERM)")
-        action_kill = menu.addAction(f"⚡ Force Kill '{proc_name}' (SIGKILL)")
+        action_term = menu.addAction(f"Terminate '{proc_name}' (SIGTERM)")
+        action_kill = menu.addAction(f"Force Kill '{proc_name}' (SIGKILL)")
 
         selected_action = menu.exec(self.table.viewport().mapToGlobal(pos))
         if selected_action == action_term:

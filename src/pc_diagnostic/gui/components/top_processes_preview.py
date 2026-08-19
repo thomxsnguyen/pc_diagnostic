@@ -38,7 +38,7 @@ class TopProcessesPreview(QFrame):
         layout.setSpacing(10)
 
         # Header Title
-        title = QLabel("⚡ TOP ACTIVE PROCESSES")
+        title = QLabel("TOP ACTIVE PROCESSES")
         title.setProperty("class", "card_title")
         title.setStyleSheet("font-size: 13px; font-weight: 700; color: #90A4AE;")
         layout.addWidget(title)
@@ -107,7 +107,7 @@ class TopProcessesPreview(QFrame):
                 self._set_item(row, 0, pid)
                 self._set_item(row, 1, name)
                 self._set_item(row, 2, cpu_val, color="#00E5FF")
-                self._set_item(row, 3, mem_str, color="#7C4DFF")
+                self._set_item(row, 3, mem_str, color="#64B5F6")
             else:
                 for col in range(4):
                     self._set_item(row, col, "—")

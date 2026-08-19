@@ -90,7 +90,7 @@ class AlertsView(QWidget):
         layout.setSpacing(10)
 
         header_row = QHBoxLayout()
-        title = QLabel("🚨 ACTIVE & RECENT INCIDENTS")
+        title = QLabel("ACTIVE & RECENT INCIDENTS")
         title.setProperty("class", "card_title")
         title.setStyleSheet("font-size: 13px; font-weight: 700; color: #90A4AE;")
         header_row.addWidget(title)
@@ -147,7 +147,7 @@ class AlertsView(QWidget):
         layout.setContentsMargins(16, 14, 16, 14)
         layout.setSpacing(14)
 
-        title = QLabel("⚙️ THRESHOLD & DEBOUNCE CONFIGURATION")
+        title = QLabel("THRESHOLD & DEBOUNCE CONFIGURATION")
         title.setProperty("class", "card_title")
         title.setStyleSheet("font-size: 13px; font-weight: 700; color: #90A4AE;")
         layout.addWidget(title)
@@ -176,7 +176,7 @@ class AlertsView(QWidget):
         lbl_mem.setStyleSheet("color: #F0F6FC; font-weight: 600; font-size: 12px;")
         self.lbl_mem_val = QLabel(f"{int(self.mem_threshold)}%")
         self.lbl_mem_val.setStyleSheet(
-            "color: #7C4DFF; font-weight: 700; font-size: 12px;"
+            "color: #64B5F6; font-weight: 700; font-size: 12px;"
         )
         self.slider_mem = QSlider(Qt.Orientation.Horizontal)
         self.slider_mem.setRange(50, 99)

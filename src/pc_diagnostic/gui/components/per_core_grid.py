@@ -103,7 +103,7 @@ class PerCoreGridWidget(QFrame):
 
         # Header Row
         header_layout = QHBoxLayout()
-        title = QLabel("⚡ PER-CORE CPU UTILIZATION")
+        title = QLabel("PER-CORE CPU UTILIZATION")
         title.setProperty("class", "card_title")
         title.setStyleSheet("font-size: 13px; font-weight: 700; color: #90A4AE;")
         header_layout.addWidget(title)

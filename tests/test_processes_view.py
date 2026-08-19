@@ -102,7 +102,7 @@ class TestProcessesView(unittest.TestCase):
             self.assertFalse(view._is_paused)
             view._toggle_pause()
             self.assertTrue(view._is_paused)
-            self.assertEqual(view.btn_pause.text(), "▶ Resume")
+            self.assertEqual(view.btn_pause.text(), "Resume")
             view._toggle_pause()
             self.assertFalse(view._is_paused)
 

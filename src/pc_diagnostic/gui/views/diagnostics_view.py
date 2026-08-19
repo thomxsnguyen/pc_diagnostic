@@ -229,7 +229,7 @@ class DiagnosticsView(QWidget):
         header_layout.setContentsMargins(16, 12, 16, 12)
 
         title_column = QVBoxLayout()
-        title = QLabel("🤖 AI DIAGNOSTICS STUDIO")
+        title = QLabel("AI DIAGNOSTICS STUDIO")
         title.setStyleSheet("font-size: 14px; font-weight: 700;")
         self.status_label = QLabel("Ready to analyze the latest telemetry snapshot")
         self.status_label.setStyleSheet("color: #90A4AE; font-size: 11px;")

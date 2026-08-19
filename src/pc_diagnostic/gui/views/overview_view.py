@@ -175,7 +175,7 @@ class OverviewView(QWidget):
         layout.setContentsMargins(16, 14, 16, 14)
         layout.setSpacing(8)
 
-        title = QLabel("📈 REAL-TIME TELEMETRY STREAM (60s)")
+        title = QLabel("REAL-TIME TELEMETRY STREAM (60s)")
         title.setProperty("class", "card_title")
         title.setStyleSheet("font-size: 13px; font-weight: 700; color: #90A4AE;")
         layout.addWidget(title)

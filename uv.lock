@@ -2443,6 +2443,7 @@ dev = [
     { name = "pytest" },
     { name = "pytest-qt" },
     { name = "ruff" },
+    { name = "watchfiles" },
 ]
 
 [package.metadata]
@@ -2461,6 +2462,7 @@ dev = [
     { name = "pytest", specifier = ">=8.0.0" },
     { name = "pytest-qt", specifier = ">=4.3.0" },
     { name = "ruff", specifier = ">=0.3.0" },
+    { name = "watchfiles", specifier = ">=1.2.0" },
 ]
 
 [[package]]

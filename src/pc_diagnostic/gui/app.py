@@ -118,7 +118,7 @@ class MainWindow(QMainWindow):
         header_layout.setSpacing(12)
 
         # Title & Version Badge
-        title_label = QLabel("⚡ PC DIAGNOSTIC")
+        title_label = QLabel("PC DIAGNOSTIC")
         title_label.setObjectName("app_title")
         header_layout.addWidget(title_label)
 
@@ -129,7 +129,7 @@ class MainWindow(QMainWindow):
         header_layout.addStretch()
 
         # Collector Status Indicator Badge
-        self.status_badge = QLabel("● ACTIVE")
+        self.status_badge = QLabel("ACTIVE")
         self.status_badge.setProperty("class", "status_active")
         header_layout.addWidget(self.status_badge)
 
@@ -141,13 +141,12 @@ class MainWindow(QMainWindow):
         header_layout.addWidget(self.cache_badge)
 
         # Active Alerts Badge
-        self.alert_badge = QLabel("🚨 0 Alerts")
+        self.alert_badge = QLabel("0 Alerts")
         self.alert_badge.setProperty("class", "alert_badge")
         header_layout.addWidget(self.alert_badge)
 
         # Theme Switcher Selector
         self.theme_combo = QComboBox()
-        self.theme_combo.addItem("Cyberpunk Dark", ThemeMode.CYBERPUNK_DARK)
         self.theme_combo.addItem("OLED Stealth", ThemeMode.OLED_STEALTH)
         self.theme_combo.addItem("Clean Light", ThemeMode.CLEAN_LIGHT)
         self.theme_combo.currentIndexChanged.connect(self._on_theme_changed)
@@ -167,12 +166,12 @@ class MainWindow(QMainWindow):
         self.nav_group.setExclusive(True)
 
         nav_items = [
-            ("📊  Overview", 0),
-            ("🌡️  Sensors", 1),
-            ("📋  Processes", 2),
-            ("🚨  Alerts", 3),
-            ("🤖  AI Studio", 4),
-            ("⚙️  Settings", 5),
+            ("Overview", 0),
+            ("Sensors", 1),
+            ("Processes", 2),
+            ("Alerts", 3),
+            ("AI Studio", 4),
+            ("Settings", 5),
         ]
 
         self.nav_buttons: list[QPushButton] = []
@@ -204,14 +203,14 @@ class MainWindow(QMainWindow):
         """Update active alerts count indicator badge."""
         if count > 0:
             self.alert_badge.setText(
-                f"🚨 {count} Active Alert{'s' if count > 1 else ''}"
+                f"{count} Active Alert{'s' if count > 1 else ''}"
             )
             self.alert_badge.setStyleSheet(
                 "background-color: #FF1744; color: #FFFFFF; font-weight: 700; "
                 "border-radius: 4px; padding: 2px 8px; font-size: 11px;"
             )
         else:
-            self.alert_badge.setText("🚨 0 Alerts")
+            self.alert_badge.setText("0 Alerts")
             self.alert_badge.setStyleSheet(
                 "background-color: #1C2536; color: #90A4AE; font-weight: 600; "
                 "border-radius: 4px; padding: 2px 8px; font-size: 11px;"
@@ -220,10 +219,10 @@ class MainWindow(QMainWindow):
     def _on_collector_status(self, is_healthy: bool) -> None:
         """Update the header collector status badge."""
         if is_healthy:
-            self.status_badge.setText("● ACTIVE")
+            self.status_badge.setText("ACTIVE")
             self.status_badge.setProperty("class", "status_active")
         else:
-            self.status_badge.setText("▲ STALE")
+            self.status_badge.setText("STALE")
             self.status_badge.setProperty("class", "status_stale")
         self.status_badge.style().unpolish(self.status_badge)
         self.status_badge.style().polish(self.status_badge)
@@ -243,7 +242,7 @@ def run_gui(
     cache: RollingCache,
     dispatcher: AlertDispatcher | None = None,
     refresh_rate: float = 1.0,
-    theme_mode: ThemeMode = ThemeMode.CYBERPUNK_DARK,
+    theme_mode: ThemeMode = ThemeMode.OLED_STEALTH,
 ) -> int:
     """Launch the PC Diagnostic Qt Desktop Application."""
     if not PYSIDE6_AVAILABLE:

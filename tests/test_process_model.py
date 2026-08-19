@@ -13,9 +13,13 @@ pytestmark = pytest.mark.skipif(not PYSIDE6_AVAILABLE, reason="PySide6 not insta
 
 def test_process_table_sorts_numerically_and_filters(qtbot: Any) -> None:
     from PySide6.QtCore import Qt
+    from PySide6.QtWidgets import QHeaderView
 
     widget = ProcessTableWidget()
     qtbot.addWidget(widget)
+    header = widget.table.horizontalHeader()
+    for column in (0, 2, 3, 4):
+        assert header.sectionResizeMode(column) == QHeaderView.ResizeMode.Interactive
     widget.update_processes(
         [
             (101, "small", 5.0, 80.0, "running"),
@@ -58,4 +62,3 @@ def test_process_termination_routes_term_and_kill(
     assert widget._terminate_pid(42, "worker") is True
     assert widget._terminate_pid(42, "worker", force=True) is True
     assert calls == ["terminate", "kill"]
-

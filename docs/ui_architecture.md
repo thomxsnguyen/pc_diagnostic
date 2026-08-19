@@ -14,7 +14,7 @@ PC Diagnostic currently operates in the terminal using Rich's Live TUI and ANSI 
 - **Interactive Process & Resource Management:** Sortable, filterable multi-column tables with search, process inspection, and thread/PID tree hierarchies.
 - **AI Diagnostics Studio:** Rich markdown rendering with collapsible evidence trees, interactive remedy suggestions, and diagnostic history comparison.
 - **System Tray & Menu Bar Resident Companion:** Continuous background monitoring, menu bar metric previews, and configurable threshold toast notifications without keeping a terminal open.
-- **Modern Dark/Light Theme Engine:** Cyberpunk Dark, OLED Stealth, and High-Contrast Glassmorphic aesthetic design.
+- **Modern Dark/Light Theme Engine:** OLED Stealth and Clean Light aesthetic design.
 
 ### 1.2 Preservation of the Core Architectural Invariant
 The fundamental design principle of PC Diagnostic remains strictly preserved:

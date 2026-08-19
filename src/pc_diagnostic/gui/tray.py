@@ -62,7 +62,7 @@ if PYSIDE6_AVAILABLE:
             layout.setContentsMargins(14, 10, 14, 10)
             layout.setSpacing(6)
 
-            title = QLabel("⚡ PC DIAGNOSTIC")
+            title = QLabel("PC DIAGNOSTIC")
             title.setStyleSheet("font-size: 11px; font-weight: 800; color: #00E5FF;")
             layout.addWidget(title)
 

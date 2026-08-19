@@ -2,7 +2,6 @@ import unittest
 
 from pc_diagnostic.gui.theme import (
     CLEAN_LIGHT,
-    CYBERPUNK_DARK,
     OLED_STEALTH,
     ThemeManager,
     ThemeMode,
@@ -11,11 +10,11 @@ from pc_diagnostic.gui.theme import (
 
 class TestThemeManager(unittest.TestCase):
     def setUp(self) -> None:
-        self.manager = ThemeManager(ThemeMode.CYBERPUNK_DARK)
+        self.manager = ThemeManager(ThemeMode.OLED_STEALTH)
 
     def test_default_theme(self) -> None:
-        self.assertEqual(self.manager.mode, ThemeMode.CYBERPUNK_DARK)
-        self.assertEqual(self.manager.tokens, CYBERPUNK_DARK)
+        self.assertEqual(self.manager.mode, ThemeMode.OLED_STEALTH)
+        self.assertEqual(self.manager.tokens, OLED_STEALTH)
 
     def test_switch_to_oled(self) -> None:
         qss = self.manager.set_theme(ThemeMode.OLED_STEALTH)

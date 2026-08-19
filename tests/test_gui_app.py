@@ -11,7 +11,7 @@ class TestGuiApp(unittest.TestCase):
     def setUp(self) -> None:
         self.cache = RollingCache(maxlen=100)
         self.bridge = TelemetryBridge(self.cache)
-        self.theme_manager = ThemeManager(ThemeMode.CYBERPUNK_DARK)
+        self.theme_manager = ThemeManager(ThemeMode.OLED_STEALTH)
 
     def test_main_window_lifecycle_headless(self) -> None:
         if not PYSIDE6_AVAILABLE:

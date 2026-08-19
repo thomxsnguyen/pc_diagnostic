@@ -72,7 +72,7 @@ class ProcessesView(QWidget):
 
         # Left Info
         vbox_left = QVBoxLayout()
-        title = QLabel("📋 PROCESS INSPECTOR")
+        title = QLabel("PROCESS INSPECTOR")
         title.setProperty("class", "card_title")
         title.setStyleSheet("font-size: 14px; font-weight: 700; color: #F0F6FC;")
         self.lbl_summary = QLabel("Monitoring active threads & task resources")
@@ -89,14 +89,14 @@ class ProcessesView(QWidget):
         )
         self.lbl_top_mem = QLabel("Top RAM: —")
         self.lbl_top_mem.setStyleSheet(
-            "color: #7C4DFF; font-size: 12px; font-weight: 600;"
+            "color: #64B5F6; font-size: 12px; font-weight: 600;"
         )
         vbox_mid.addWidget(self.lbl_top_cpu)
         vbox_mid.addWidget(self.lbl_top_mem)
         banner_layout.addLayout(vbox_mid, stretch=2)
 
         # Right Action Buttons
-        self.btn_pause = QPushButton("⏸ Pause")
+        self.btn_pause = QPushButton("Pause")
         self.btn_pause.setStyleSheet(
             "QPushButton { background-color: #1C2536; color: #F0F6FC; "
             "border: 1px solid #253248; border-radius: 4px; padding: 6px 14px; "
@@ -116,13 +116,13 @@ class ProcessesView(QWidget):
         """Toggle live process table updating."""
         self._is_paused = not self._is_paused
         if self._is_paused:
-            self.btn_pause.setText("▶ Resume")
+            self.btn_pause.setText("Resume")
             self.btn_pause.setStyleSheet(
                 "QPushButton { background-color: #FFD600; color: #0B0E14; "
                 "border-radius: 4px; padding: 6px 14px; font-weight: 700; }"
             )
         else:
-            self.btn_pause.setText("⏸ Pause")
+            self.btn_pause.setText("Pause")
             self.btn_pause.setStyleSheet(
                 "QPushButton { background-color: #1C2536; color: #F0F6FC; "
                 "border: 1px solid #253248; border-radius: 4px; padding: 6px 14px; "

@@ -5,7 +5,6 @@ from enum import Enum
 
 
 class ThemeMode(Enum):
-    CYBERPUNK_DARK = "cyberpunk_dark"
     OLED_STEALTH = "oled_stealth"
     CLEAN_LIGHT = "clean_light"
 
@@ -38,29 +37,6 @@ class ThemeTokens:
     )
 
 
-CYBERPUNK_DARK = ThemeTokens(
-    name="Cyberpunk Dark",
-    bg_window="#0B0E14",
-    bg_sidebar="#111620",
-    bg_header="#151C29",
-    bg_card="#151C29",
-    bg_card_hover="#1B2435",
-    bg_input="#0D121B",
-    border_subtle="#202A3C",
-    border_card="#253248",
-    border_accent="#00E5FF",
-    text_primary="#F0F6FC",
-    text_secondary="#90A4AE",
-    text_muted="#546E7A",
-    accent_primary="#00E5FF",
-    accent_secondary="#7C4DFF",
-    accent_glow="rgba(0, 229, 255, 0.15)",
-    status_normal="#00E676",
-    status_warning="#FFD600",
-    status_critical="#FF1744",
-    status_info="#00B0FF",
-)
-
 OLED_STEALTH = ThemeTokens(
     name="OLED Stealth",
     bg_window="#000000",
@@ -71,13 +47,13 @@ OLED_STEALTH = ThemeTokens(
     bg_input="#050505",
     border_subtle="#1F1F1F",
     border_card="#262626",
-    border_accent="#00FF66",
+    border_accent="#2196F3",
     text_primary="#FFFFFF",
     text_secondary="#A3A3A3",
     text_muted="#525252",
-    accent_primary="#00FF66",
-    accent_secondary="#00CCFF",
-    accent_glow="rgba(0, 255, 102, 0.12)",
+    accent_primary="#2196F3",
+    accent_secondary="#64B5F6",
+    accent_glow="rgba(33, 150, 243, 0.14)",
     status_normal="#00FF66",
     status_warning="#FFB703",
     status_critical="#FF0055",
@@ -108,7 +84,6 @@ CLEAN_LIGHT = ThemeTokens(
 )
 
 THEMES: dict[ThemeMode, ThemeTokens] = {
-    ThemeMode.CYBERPUNK_DARK: CYBERPUNK_DARK,
     ThemeMode.OLED_STEALTH: OLED_STEALTH,
     ThemeMode.CLEAN_LIGHT: CLEAN_LIGHT,
 }
@@ -117,7 +92,7 @@ THEMES: dict[ThemeMode, ThemeTokens] = {
 class ThemeManager:
     """Manages application theme state, color tokens, and QSS generation."""
 
-    def __init__(self, default_mode: ThemeMode = ThemeMode.CYBERPUNK_DARK) -> None:
+    def __init__(self, default_mode: ThemeMode = ThemeMode.OLED_STEALTH) -> None:
         self._mode = default_mode
         self._tokens = THEMES[default_mode]
 
@@ -132,7 +107,7 @@ class ThemeManager:
     def set_theme(self, mode: ThemeMode) -> str:
         """Switch active theme and return the generated QSS stylesheet."""
         self._mode = mode
-        self._tokens = THEMES.get(mode, CYBERPUNK_DARK)
+        self._tokens = THEMES.get(mode, OLED_STEALTH)
         return self.get_stylesheet()
 
     def get_stylesheet(self) -> str:

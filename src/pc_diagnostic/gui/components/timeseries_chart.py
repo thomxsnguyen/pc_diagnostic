@@ -42,7 +42,7 @@ class TimeSeriesChart(QWidget):
             },
             "memory.utilization": {
                 "label": "Memory (%)",
-                "color": QColor("#7C4DFF") if PYSIDE6_AVAILABLE else None,
+                "color": QColor("#64B5F6") if PYSIDE6_AVAILABLE else None,
                 "values": deque(maxlen=maxlen),
                 "visible": True,
                 "max_scale": 100.0,
