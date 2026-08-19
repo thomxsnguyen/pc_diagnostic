@@ -2,6 +2,7 @@ import os
 import platform
 import subprocess
 import sys
+from importlib.util import find_spec
 
 
 def compile_mac_helper() -> None:
@@ -103,14 +104,21 @@ def sign_binary(target_path: str, description: str) -> None:
 
 def build_pyinstaller_binary() -> None:
     """Run PyInstaller using the spec configuration."""
+    missing = [name for name in ("PySide6", "pyqtgraph") if find_spec(name) is None]
+    if missing:
+        print("[ERROR] Missing GUI build dependencies: " + ", ".join(missing))
+        sys.exit(1)
+
     current_dir = os.path.dirname(os.path.abspath(__file__))
     spec_path = os.path.join(current_dir, "pc_diagnostic.spec")
 
     print(f"[INFO] Launching PyInstaller build with spec: {spec_path}")
-    build_cmd = ["pyinstaller", "--clean", spec_path]
+    build_cmd = [sys.executable, "-m", "PyInstaller", "--clean", spec_path]
+    build_env = os.environ.copy()
+    build_env["QT_API"] = "pyside6"
 
     try:
-        subprocess.run(build_cmd, check=True)
+        subprocess.run(build_cmd, check=True, env=build_env)
         print("[SUCCESS] PyInstaller build execution completed.")
     except Exception as e:
         print(f"[ERROR] PyInstaller compilation failed: {e}")

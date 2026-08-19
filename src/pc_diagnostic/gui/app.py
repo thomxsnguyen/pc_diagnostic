@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Any
 
 from pc_diagnostic.gui.bridge import PYSIDE6_AVAILABLE, TelemetryBridge
 from pc_diagnostic.gui.theme import ThemeManager, ThemeMode
+from pc_diagnostic.gui.tray import TrayManager
 from pc_diagnostic.gui.views import (
     AlertsView,
     DiagnosticsView,
@@ -63,6 +64,7 @@ class MainWindow(QMainWindow):
 
         self._init_ui()
         self._connect_signals()
+        self.tray_manager = TrayManager(self, self.bridge)
 
         # Apply initial theme stylesheet
         self.setStyleSheet(self.theme_manager.get_stylesheet())
@@ -256,6 +258,8 @@ def run_gui(
     window = MainWindow(bridge, theme_manager)
 
     bridge.start(interval_ms=max(100, int(refresh_rate * 1000)))
+    tray_started = window.tray_manager.start()
+    app.setQuitOnLastWindowClosed(not tray_started)
     window.show()
 
     try:

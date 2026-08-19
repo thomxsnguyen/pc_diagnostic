@@ -1,19 +1,31 @@
 # -*- mode: python ; coding: utf-8 -*-
 
+import os
+
+from PyInstaller.utils.hooks import collect_all
+
 block_cipher = None
+
+pyqtgraph_datas, pyqtgraph_binaries, pyqtgraph_hiddenimports = collect_all('pyqtgraph')
+smc_helper = 'src/pc_diagnostic/providers/smc_helper'
+native_binaries = (
+    [(smc_helper, 'pc_diagnostic/providers')] if os.path.exists(smc_helper) else []
+)
 
 a = Analysis(
     ['src/pc_diagnostic/main.py'],
     pathex=[],
-    binaries=[
-        ('src/pc_diagnostic/providers/smc_helper', 'pc_diagnostic/providers'),
-    ],
-    datas=[],
+    binaries=native_binaries + pyqtgraph_binaries,
+    datas=pyqtgraph_datas,
     hiddenimports=[
         'psutil',
         'rich',
         'crewai',
-    ],
+        'PySide6.QtCore',
+        'PySide6.QtGui',
+        'PySide6.QtWidgets',
+        'PySide6.QtSvg',
+    ] + pyqtgraph_hiddenimports,
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
@@ -39,7 +51,7 @@ exe = EXE(
     upx=True,
     upx_exclude=[],
     runtime_tmpdir=None,
-    console=True,
+    console=False,
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,
