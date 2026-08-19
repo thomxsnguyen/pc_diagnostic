@@ -38,9 +38,8 @@ class TopProcessesPreview(QFrame):
         layout.setSpacing(10)
 
         # Header Title
-        title = QLabel("TOP ACTIVE PROCESSES")
-        title.setProperty("class", "card_title")
-        title.setStyleSheet("font-size: 13px; font-weight: 700; color: #A6ABB3;")
+        title = QLabel("Top processes")
+        title.setObjectName("overview_section_title")
         layout.addWidget(title)
 
         # Table Widget

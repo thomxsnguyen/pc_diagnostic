@@ -79,31 +79,67 @@ class TestGuiComponents(unittest.TestCase):
         card = StorageNetworkCard()
         readings = [
             MetricReading(
-                metric="disk.used_bytes",
-                value=500 * (1024**3),
+                metric="disk.usage.used",
+                value=12 * 1_000_000_000,
                 unit=MetricUnit.BYTES,
                 source="test",
+                tags={"mountpoint": "/"},
             ),
             MetricReading(
-                metric="disk.read_bytes_per_sec",
+                metric="disk.usage.total",
+                value=1000 * 1_000_000_000,
+                unit=MetricUnit.BYTES,
+                source="test",
+                tags={"mountpoint": "/"},
+            ),
+            MetricReading(
+                metric="disk.usage.percent",
+                value=1.2,
+                unit=MetricUnit.PERCENT,
+                source="test",
+                tags={"mountpoint": "/"},
+            ),
+            MetricReading(
+                metric="disk.usage.used",
+                value=500 * 1_000_000_000,
+                unit=MetricUnit.BYTES,
+                source="test",
+                tags={"mountpoint": "/System/Volumes/Data"},
+            ),
+            MetricReading(
+                metric="disk.usage.total",
+                value=1000 * 1_000_000_000,
+                unit=MetricUnit.BYTES,
+                source="test",
+                tags={"mountpoint": "/System/Volumes/Data"},
+            ),
+            MetricReading(
+                metric="disk.usage.percent",
+                value=50.0,
+                unit=MetricUnit.PERCENT,
+                source="test",
+                tags={"mountpoint": "/System/Volumes/Data"},
+            ),
+            MetricReading(
+                metric="disk.io.read_bytes",
                 value=5 * 1024 * 1024,
                 unit=MetricUnit.BYTES_PER_SEC,
                 source="test",
             ),
             MetricReading(
-                metric="disk.write_bytes_per_sec",
+                metric="disk.io.write_bytes",
                 value=2 * 1024 * 1024,
                 unit=MetricUnit.BYTES_PER_SEC,
                 source="test",
             ),
             MetricReading(
-                metric="network.rx_bytes_per_sec",
+                metric="network.io.bytes_recv",
                 value=1024 * 1024,
                 unit=MetricUnit.BYTES_PER_SEC,
                 source="test",
             ),
             MetricReading(
-                metric="network.tx_bytes_per_sec",
+                metric="network.io.bytes_sent",
                 value=512 * 1024,
                 unit=MetricUnit.BYTES_PER_SEC,
                 source="test",
@@ -114,6 +150,8 @@ class TestGuiComponents(unittest.TestCase):
 
         if PYSIDE6_AVAILABLE:
             self.assertIn("500.0 GB", card.lbl_storage_used.text())
+            self.assertIn("1000.0 GB", card.lbl_storage_used.text())
+            self.assertEqual(card.storage_bar.value(), 50)
             self.assertIn("5.0 MB/s", card.lbl_disk_read.text())
             self.assertIn("2.0 MB/s", card.lbl_disk_write.text())
             self.assertIn("1.0 MB/s", card.lbl_net_rx.text())

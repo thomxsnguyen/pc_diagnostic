@@ -59,8 +59,7 @@ class MainWindow(QMainWindow):
         self.theme_manager = theme_manager or ThemeManager()
 
         self.setWindowTitle("PC Diagnostic — Telemetry & AI Diagnostic Monitor")
-        self.resize(1120, 740)
-        self.setMinimumSize(920, 600)
+        self.setFixedSize(1280, 900)
 
         self._init_ui()
         self._connect_signals()

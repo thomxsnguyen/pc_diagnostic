@@ -4,6 +4,21 @@ from pc_diagnostic.models import MetricUnit
 from pc_diagnostic.providers.psutil_provider import PsutilProvider
 
 
+def test_psutil_provider_uses_monotonic_uptime_fallback() -> None:
+    mock_vm = MagicMock(total=16_000_000)
+    with (
+        patch.object(PsutilProvider, "_get_cpu_model", return_value="Test CPU"),
+        patch.object(PsutilProvider, "_get_os_version", return_value="Test OS"),
+        patch("psutil.virtual_memory", return_value=mock_vm),
+        patch("psutil.boot_time", side_effect=PermissionError),
+        patch("time.time", return_value=1000.0),
+        patch("time.monotonic", return_value=250.0),
+    ):
+        provider = PsutilProvider()
+
+    assert provider._boot_time == 750.0
+
+
 def test_psutil_provider_reads() -> None:
     # Set up mocks for psutil
     mock_vm = MagicMock()
@@ -17,11 +32,13 @@ def test_psutil_provider_reads() -> None:
 
     mock_part = MagicMock()
     mock_part.device = "/dev/sda1"
-    mock_part.mountpoint = "/"
+    mock_part.mountpoint = "/System/Volumes/Data"
     mock_part.opts = "rw"
 
     mock_usage = MagicMock()
     mock_usage.used = 50000000
+    mock_usage.total = 100000000
+    mock_usage.percent = 50.0
 
     mock_disk_io = MagicMock()
     mock_disk_io.read_bytes = 100000
@@ -51,6 +68,7 @@ def test_psutil_provider_reads() -> None:
 
     with (
         patch("psutil.virtual_memory", return_value=mock_vm),
+        patch("psutil.boot_time", return_value=100.0),
         patch("psutil.cpu_percent", side_effect=mock_cpu_percent),
         patch("psutil.cpu_freq", return_value=mock_freq),
         patch("psutil.disk_partitions", return_value=[mock_part]),
@@ -60,9 +78,13 @@ def test_psutil_provider_reads() -> None:
         patch("psutil.process_iter", return_value=[mock_proc]),
         patch("platform.system", return_value="Darwin"),
         patch("platform.release", return_value="13.0"),
-        patch("platform.version", return_value="Release 13.0"),
         time_mock,
         patch("subprocess.check_output", return_value=b"Intel Core i7"),
+        patch.object(
+            PsutilProvider,
+            "_get_macos_storage_capacity",
+            return_value=(100000000.0, 90000000.0),
+        ),
     ):
         provider = PsutilProvider()
         assert provider.name == "psutil"
@@ -83,6 +105,9 @@ def test_psutil_provider_reads() -> None:
         metrics2 = {r.metric: r for r in readings2}
 
         # Check rates
+        assert metrics2["disk.usage.used"].value == 10000000.0
+        assert metrics2["disk.usage.total"].value == 100000000.0
+        assert metrics2["disk.usage.percent"].value == 10.0
         assert "disk.io.read_bytes" in metrics2
         assert (
             metrics2["disk.io.read_bytes"].value == 50000.0
@@ -97,6 +122,9 @@ def test_psutil_provider_reads() -> None:
         # Check static specs
         assert "system.info.cpu_model" in metrics2
         assert metrics2["system.info.cpu_model"].tags.get("value") == "Intel Core i7"
+        assert metrics2["system.info.os_version"].tags.get("value") == "Darwin 13.0"
+        assert metrics2["system.uptime"].value == 902.0
+        assert metrics2["system.uptime"].unit == MetricUnit.SECONDS
 
         assert "process.cpu_percent" in metrics2
         assert metrics2["process.cpu_percent"].value == 12.5

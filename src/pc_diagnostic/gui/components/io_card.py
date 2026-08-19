@@ -32,9 +32,9 @@ def format_bytes_speed(bytes_val: float) -> str:
 
 def format_bytes_size(bytes_val: float) -> str:
     """Format bytes capacity into human readable format."""
-    if bytes_val < 1024 * 1024 * 1024:
-        return f"{bytes_val / (1024 * 1024):.0f} MB"
-    return f"{bytes_val / (1024 * 1024 * 1024):.1f} GB"
+    if bytes_val < 1_000_000_000:
+        return f"{bytes_val / 1_000_000:.0f} MB"
+    return f"{bytes_val / 1_000_000_000:.1f} GB"
 
 
 class StorageNetworkCard(QFrame):
@@ -56,9 +56,8 @@ class StorageNetworkCard(QFrame):
         layout.setSpacing(10)
 
         # Title
-        title = QLabel("STORAGE & NETWORK I/O")
-        title.setProperty("class", "card_title")
-        title.setStyleSheet("font-size: 13px; font-weight: 700; color: #A6ABB3;")
+        title = QLabel("Storage & network")
+        title.setObjectName("overview_section_title")
         layout.addWidget(title)
 
         grid = QGridLayout()
@@ -120,6 +119,7 @@ class StorageNetworkCard(QFrame):
         grid.addLayout(net_rates_layout, 5, 0, 1, 2)
 
         layout.addLayout(grid)
+        layout.addStretch()
 
     def update_snapshot(self, snapshot: Any) -> None:
         """Update storage and network counters from snapshot readings."""
@@ -130,14 +130,71 @@ class StorageNetworkCard(QFrame):
         ):
             return
 
+        disk_usage: dict[str, dict[str, float]] = {}
+        rates = {
+            "disk_read": {"canonical": 0.0, "legacy": 0.0},
+            "disk_write": {"canonical": 0.0, "legacy": 0.0},
+            "net_recv": {"canonical": 0.0, "legacy": 0.0},
+            "net_sent": {"canonical": 0.0, "legacy": 0.0},
+        }
+        seen: set[tuple[str, str]] = set()
+
         for r in snapshot.readings:
-            if r.metric == "disk.used_bytes":
-                self.lbl_storage_used.setText(f"Used: {format_bytes_size(r.value)}")
-            elif r.metric == "disk.read_bytes_per_sec":
-                self.lbl_disk_read.setText(f"Read: {format_bytes_speed(r.value)}")
-            elif r.metric == "disk.write_bytes_per_sec":
-                self.lbl_disk_write.setText(f"Write: {format_bytes_speed(r.value)}")
-            elif r.metric == "network.rx_bytes_per_sec":
-                self.lbl_net_rx.setText(f"Down: {format_bytes_speed(r.value)}")
-            elif r.metric == "network.tx_bytes_per_sec":
-                self.lbl_net_tx.setText(f"Up: {format_bytes_speed(r.value)}")
+            if r.metric.startswith("disk.usage."):
+                field = r.metric.removeprefix("disk.usage.")
+                if field in {"used", "total", "percent"}:
+                    mountpoint = (r.tags or {}).get("mountpoint", "")
+                    disk_usage.setdefault(mountpoint, {})[field] = float(r.value)
+            elif r.metric == "disk.used_bytes":
+                disk_usage.setdefault("", {})["used"] = float(r.value)
+            elif r.metric in {"disk.io.read_bytes", "disk.read_bytes_per_sec"}:
+                source = "canonical" if r.metric == "disk.io.read_bytes" else "legacy"
+                rates["disk_read"][source] += float(r.value)
+                seen.add(("disk_read", source))
+            elif r.metric in {"disk.io.write_bytes", "disk.write_bytes_per_sec"}:
+                source = "canonical" if r.metric == "disk.io.write_bytes" else "legacy"
+                rates["disk_write"][source] += float(r.value)
+                seen.add(("disk_write", source))
+            elif r.metric in {"network.io.bytes_recv", "network.rx_bytes_per_sec"}:
+                source = (
+                    "canonical" if r.metric == "network.io.bytes_recv" else "legacy"
+                )
+                rates["net_recv"][source] += float(r.value)
+                seen.add(("net_recv", source))
+            elif r.metric in {"network.io.bytes_sent", "network.tx_bytes_per_sec"}:
+                source = (
+                    "canonical" if r.metric == "network.io.bytes_sent" else "legacy"
+                )
+                rates["net_sent"][source] += float(r.value)
+                seen.add(("net_sent", source))
+
+        if disk_usage:
+            # macOS splits its startup disk into a sealed system volume at `/`
+            # and the writable user-data volume below. Display the latter as
+            # the primary disk; other platforms continue to prefer `/`.
+            usage = (
+                disk_usage.get("/System/Volumes/Data")
+                or disk_usage.get("/")
+                or next(iter(disk_usage.values()))
+            )
+            used = usage.get("used", 0.0)
+            total = usage.get("total", 0.0)
+            if total > 0:
+                self.lbl_storage_used.setText(
+                    f"Used: {format_bytes_size(used)} / {format_bytes_size(total)}"
+                )
+                percent = usage.get("percent", (used / total) * 100.0)
+                self.storage_bar.setValue(round(max(0.0, min(100.0, percent))))
+            else:
+                self.lbl_storage_used.setText(f"Used: {format_bytes_size(used)}")
+
+        labels = (
+            ("disk_read", self.lbl_disk_read, "Read"),
+            ("disk_write", self.lbl_disk_write, "Write"),
+            ("net_recv", self.lbl_net_rx, "Down"),
+            ("net_sent", self.lbl_net_tx, "Up"),
+        )
+        for key, label, prefix in labels:
+            source = "canonical" if (key, "canonical") in seen else "legacy"
+            if (key, source) in seen:
+                label.setText(f"{prefix}: {format_bytes_speed(rates[key][source])}")

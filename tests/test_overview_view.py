@@ -9,6 +9,10 @@ from pc_diagnostic.models import MetricReading, MetricUnit, Snapshot
 
 class TestOverviewView(unittest.TestCase):
     def setUp(self) -> None:
+        if PYSIDE6_AVAILABLE:
+            from PySide6.QtWidgets import QApplication
+
+            self.app = QApplication.instance() or QApplication([])
         self.cache = RollingCache(maxlen=100)
         self.bridge = TelemetryBridge(self.cache)
 
@@ -29,11 +33,16 @@ class TestOverviewView(unittest.TestCase):
                 source="test",
             ),
             MetricReading(
-                metric="cpu.model",
+                metric="system.info.cpu_model",
                 value=0.0,
                 unit=MetricUnit.INFO,
                 source="test",
-                tags={"model": "Apple M1 Max"},
+                tags={
+                    "value": (
+                        '{"SPHardwareDataType":[{"chip_type":"Apple M1 Max",'
+                        '"serial_number":"hidden"}]}'
+                    )
+                },
             ),
             MetricReading(
                 metric="memory.utilization",
@@ -42,13 +51,13 @@ class TestOverviewView(unittest.TestCase):
                 source="test",
             ),
             MetricReading(
-                metric="memory.used_bytes",
+                metric="memory.used",
                 value=16 * (1024**3),
                 unit=MetricUnit.BYTES,
                 source="test",
             ),
             MetricReading(
-                metric="memory.total_bytes",
+                metric="memory.total",
                 value=32 * (1024**3),
                 unit=MetricUnit.BYTES,
                 source="test",
@@ -64,7 +73,7 @@ class TestOverviewView(unittest.TestCase):
                 value=0.0,
                 unit=MetricUnit.INFO,
                 source="test",
-                tags={"os": "macOS 15.0"},
+                tags={"value": "Darwin 25.5.0 (Darwin Kernel Version details)"},
             ),
             MetricReading(
                 metric="system.uptime",
@@ -82,10 +91,11 @@ class TestOverviewView(unittest.TestCase):
             self.assertEqual(view.cpu_gauge.value, 42.0)
             self.assertEqual(view.mem_gauge.value, 55.5)
             self.assertEqual(view.thermal_gauge.value, 48.0)
-            self.assertIn("Apple M1 Max", view.lbl_cpu_model.text())
-            self.assertIn("macOS 15.0", view.lbl_os.text())
+            self.assertEqual(view.lbl_cpu_model.text(), "Apple M1 Max")
+            self.assertEqual(view.lbl_os.text(), "Darwin 25.5.0")
             self.assertIn("2h 0m", view.lbl_uptime.text())
             self.assertIn("32.0 GB", view.lbl_mem_total.text())
+
 
 
 if __name__ == "__main__":

@@ -41,9 +41,9 @@ class RadialGaugeWidget(QWidget):
 
         # Colors
         self._color_track = QColor("#24272D") if PYSIDE6_AVAILABLE else None
-        self._color_normal = QColor("#00E676") if PYSIDE6_AVAILABLE else None
-        self._color_warning = QColor("#FFD600") if PYSIDE6_AVAILABLE else None
-        self._color_critical = QColor("#FF1744") if PYSIDE6_AVAILABLE else None
+        self._color_normal = QColor("#60A5FA") if PYSIDE6_AVAILABLE else None
+        self._color_warning = QColor("#F5A524") if PYSIDE6_AVAILABLE else None
+        self._color_critical = QColor("#F05252") if PYSIDE6_AVAILABLE else None
         self._color_text = QColor("#ECEEF1") if PYSIDE6_AVAILABLE else None
         self._color_subtitle = QColor("#A6ABB3") if PYSIDE6_AVAILABLE else None
 
@@ -100,12 +100,14 @@ class RadialGaugeWidget(QWidget):
 
         width = float(self.width())
         height = float(self.height())
-        size = min(width, height)
-        pen_width = 11.0
-        radius = (size / 2.0) - (pen_width * 1.5)
+        title_band_height = 28.0
+        gauge_height = max(1.0, height - title_band_height)
+        size = min(width, gauge_height)
+        pen_width = 8.0
+        radius = max(1.0, (size / 2.0) - (pen_width * 1.75))
 
         center_x = width / 2.0
-        center_y = (height / 2.0) + 4.0
+        center_y = title_band_height + (gauge_height / 2.0)
 
         rect = QRectF(
             center_x - radius,
@@ -145,19 +147,19 @@ class RadialGaugeWidget(QWidget):
         # 3. Draw Title (Top)
         painter.setPen(self._color_subtitle)
         title_font = QFont(self.font())
-        title_font.setPointSize(10)
-        title_font.setBold(True)
+        title_font.setPointSize(9)
+        title_font.setWeight(QFont.Weight.DemiBold)
         painter.setFont(title_font)
         painter.drawText(
-            QRectF(0, center_y - radius - 14, width, 18),
+            QRectF(0, 4, width, 18),
             Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter,
-            self._title.upper(),
+            self._title,
         )
 
         # 4. Draw Center Value
         painter.setPen(self._color_text)
         val_font = QFont(self.font())
-        val_font.setPointSize(20)
+        val_font.setPointSize(18)
         val_font.setBold(True)
         painter.setFont(val_font)
         val_str = (
@@ -175,7 +177,7 @@ class RadialGaugeWidget(QWidget):
         if self._subtitle:
             painter.setPen(self._color_subtitle)
             sub_font = QFont(self.font())
-            sub_font.setPointSize(9)
+            sub_font.setPointSize(8)
             sub_font.setBold(False)
             painter.setFont(sub_font)
             painter.drawText(

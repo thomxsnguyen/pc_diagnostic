@@ -34,8 +34,13 @@ class PsutilProvider(Provider):
                 self._total_memory = psutil.virtual_memory().total
             except Exception:
                 self._total_memory = 0
+            try:
+                self._boot_time = float(psutil.boot_time())
+            except Exception:
+                self._boot_time = self._start_time - time.monotonic()
         else:
             self._total_memory = 0
+            self._boot_time = self._start_time - time.monotonic()
 
     @property
     def name(self) -> str:
@@ -174,11 +179,41 @@ class PsutilProvider(Provider):
                     continue
                 try:
                     usage = psutil.disk_usage(part.mountpoint)
+                    used = float(usage.used)
+                    total = float(usage.total)
+                    percent = float(usage.percent)
+                    if (
+                        platform.system() == "Darwin"
+                        and part.mountpoint == "/System/Volumes/Data"
+                    ):
+                        capacity = self._get_macos_storage_capacity(part.mountpoint)
+                        if capacity is not None:
+                            total, available = capacity
+                            used = max(0.0, total - available)
+                            percent = (used / total) * 100.0 if total > 0 else 0.0
                     readings.append(
                         MetricReading(
                             metric="disk.usage.used",
-                            value=float(usage.used),
+                            value=used,
                             unit=MetricUnit.BYTES,
+                            source=self.name,
+                            tags={"device": part.device, "mountpoint": part.mountpoint},
+                        )
+                    )
+                    readings.append(
+                        MetricReading(
+                            metric="disk.usage.total",
+                            value=total,
+                            unit=MetricUnit.BYTES,
+                            source=self.name,
+                            tags={"device": part.device, "mountpoint": part.mountpoint},
+                        )
+                    )
+                    readings.append(
+                        MetricReading(
+                            metric="disk.usage.percent",
+                            value=percent,
+                            unit=MetricUnit.PERCENT,
                             source=self.name,
                             tags={"device": part.device, "mountpoint": part.mountpoint},
                         )
@@ -385,6 +420,14 @@ class PsutilProvider(Provider):
                 tags={"value": str(self._total_memory)},
             )
         )
+        readings.append(
+            MetricReading(
+                metric="system.uptime",
+                value=max(0.0, now - self._boot_time),
+                unit=MetricUnit.SECONDS,
+                source=self.name,
+            )
+        )
 
         self._last_time = now
         return readings
@@ -468,9 +511,94 @@ class PsutilProvider(Provider):
             pass
         return platform.processor() or platform.machine() or "Unknown CPU"
 
+    @staticmethod
+    def _get_macos_storage_capacity(mountpoint: str) -> tuple[float, float] | None:
+        """Return total and reclaimable-aware available APFS capacity."""
+        try:
+            import ctypes
+
+            objc = ctypes.CDLL("/usr/lib/libobjc.A.dylib")
+            foundation = ctypes.CDLL(
+                "/System/Library/Frameworks/Foundation.framework/Foundation"
+            )
+            objc.objc_getClass.argtypes = [ctypes.c_char_p]
+            objc.objc_getClass.restype = ctypes.c_void_p
+            objc.sel_registerName.argtypes = [ctypes.c_char_p]
+            objc.sel_registerName.restype = ctypes.c_void_p
+
+            message_address = ctypes.cast(
+                objc.objc_msgSend, ctypes.c_void_p
+            ).value
+            if message_address is None:
+                return None
+
+            message_with_object = ctypes.CFUNCTYPE(
+                ctypes.c_void_p,
+                ctypes.c_void_p,
+                ctypes.c_void_p,
+                ctypes.c_void_p,
+            )(message_address)
+            message_with_string = ctypes.CFUNCTYPE(
+                ctypes.c_void_p,
+                ctypes.c_void_p,
+                ctypes.c_void_p,
+                ctypes.c_char_p,
+            )(message_address)
+            get_resource_value = ctypes.CFUNCTYPE(
+                ctypes.c_bool,
+                ctypes.c_void_p,
+                ctypes.c_void_p,
+                ctypes.POINTER(ctypes.c_void_p),
+                ctypes.c_void_p,
+                ctypes.POINTER(ctypes.c_void_p),
+            )(message_address)
+            long_long_value = ctypes.CFUNCTYPE(
+                ctypes.c_longlong, ctypes.c_void_p, ctypes.c_void_p
+            )(message_address)
+
+            ns_string = objc.objc_getClass(b"NSString")
+            ns_url = objc.objc_getClass(b"NSURL")
+            string_selector = objc.sel_registerName(b"stringWithUTF8String:")
+            url_selector = objc.sel_registerName(b"fileURLWithPath:")
+            resource_selector = objc.sel_registerName(
+                b"getResourceValue:forKey:error:"
+            )
+            number_selector = objc.sel_registerName(b"longLongValue")
+
+            path = message_with_string(
+                ns_string, string_selector, mountpoint.encode("utf-8")
+            )
+            url = message_with_object(ns_url, url_selector, path)
+
+            def capacity_value(symbol: str) -> int:
+                key = ctypes.c_void_p.in_dll(foundation, symbol).value
+                value = ctypes.c_void_p()
+                error = ctypes.c_void_p()
+                success = get_resource_value(
+                    url,
+                    resource_selector,
+                    ctypes.byref(value),
+                    key,
+                    ctypes.byref(error),
+                )
+                if not success or not value.value:
+                    return 0
+                return int(long_long_value(value, number_selector))
+
+            total = capacity_value("NSURLVolumeTotalCapacityKey")
+            available = capacity_value(
+                "NSURLVolumeAvailableCapacityForImportantUsageKey"
+            )
+            if total <= 0 or available <= 0 or available > total:
+                return None
+            return float(total), float(available)
+        except Exception as exc:
+            logger.debug(f"Failed to read macOS reclaimable capacity: {exc}")
+            return None
+
     def _get_os_version(self) -> str:
         """Helper to construct platform OS and release version."""
         try:
-            return f"{platform.system()} {platform.release()} ({platform.version()})"
+            return f"{platform.system()} {platform.release()}"
         except Exception:
             return platform.system() or "Unknown OS"

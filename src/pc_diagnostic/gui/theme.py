@@ -305,7 +305,7 @@ class ThemeManager:
         }}
 
         /* --- AI Studio --- */
-        #studio_page_title {{
+        #studio_page_title, #overview_page_title {{
             background-color: transparent;
             color: {t.text_primary};
             font-size: 18px;
@@ -313,13 +313,14 @@ class ThemeManager:
         }}
 
         #studio_page_subtitle, #studio_section_subtitle,
+        #overview_page_subtitle, #overview_section_subtitle,
         #recommendation_categories {{
             background-color: transparent;
             color: {t.text_secondary};
             font-size: 11px;
         }}
 
-        #studio_section_title {{
+        #studio_section_title, #overview_section_title {{
             background-color: transparent;
             color: {t.text_primary};
             font-size: 13px;
@@ -357,6 +358,39 @@ class ThemeManager:
         QProgressBar#studio_progress::chunk {{
             background-color: {t.accent_primary};
             border-radius: 2px;
+        }}
+
+        /* --- Overview --- */
+        QWidget#overview_root QLabel {{
+            background-color: transparent;
+        }}
+
+        QWidget#overview_root QFrame.card {{
+            padding: 0;
+        }}
+
+        #overview_meta_label {{
+            color: {t.text_muted};
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 0.6px;
+        }}
+
+        #overview_meta_primary {{
+            color: {t.text_primary};
+            font-size: 12px;
+            font-weight: 600;
+        }}
+
+        #overview_meta_secondary {{
+            color: {t.text_secondary};
+            font-size: 11px;
+        }}
+
+        #overview_header_divider {{
+            color: {t.border_subtle};
+            background-color: {t.border_subtle};
+            max-width: 1px;
         }}
 
         QHeaderView::section {{

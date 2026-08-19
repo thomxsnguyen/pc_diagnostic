@@ -27,6 +27,8 @@ class TestGuiApp(unittest.TestCase):
         self.assertEqual(
             window.windowTitle(), "PC Diagnostic — Telemetry & AI Diagnostic Monitor"
         )
+        self.assertEqual((window.width(), window.height()), (1280, 900))
+        self.assertEqual(window.minimumSize(), window.maximumSize())
         self.assertEqual(window.stack.count(), 6)
 
         # Test switching views
