@@ -263,11 +263,11 @@ class ThemeManager:
         }}
 
         QComboBox#theme_combo {{
-            background-color: transparent;
+            background-color: {t.bg_input};
             color: {t.text_primary};
-            border: none;
-            border-left: 1px solid {t.border_subtle};
-            padding: 3px 24px 3px 10px;
+            border: 1px solid {t.border_subtle};
+            border-radius: 4px;
+            padding: 4px 28px 4px 10px;
             min-width: 92px;
             font-size: 11px;
             font-weight: 600;
@@ -275,16 +275,12 @@ class ThemeManager:
 
         QComboBox#theme_combo:hover {{
             background-color: {t.bg_card_hover};
-            border-radius: 4px;
+            border-color: {t.border_card};
         }}
 
-        QComboBox#theme_combo QAbstractItemView {{
-            background-color: {t.bg_card};
-            color: {t.text_primary};
-            border: 1px solid {t.border_card};
-            selection-background-color: {t.bg_card_hover};
-            selection-color: {t.text_primary};
-            padding: 4px;
+        QComboBox#theme_combo:focus,
+        QComboBox#theme_combo:on {{
+            border-color: {t.border_accent};
         }}
 
         /* --- Action Buttons --- */
@@ -720,7 +716,7 @@ class ThemeManager:
         }}
 
         QComboBox#ai_provider_combo, QLineEdit#ai_token_input {{
-            background-color: {t.bg_card};
+            background-color: {t.bg_input};
             color: {t.text_primary};
             border: 1px solid {t.border_card};
             border-radius: 4px;
@@ -730,11 +726,58 @@ class ThemeManager:
 
         QComboBox#ai_provider_combo {{
             min-width: 150px;
-            padding-right: 26px;
+            padding-right: 32px;
         }}
 
-        QComboBox#ai_provider_combo:focus, QLineEdit#ai_token_input:focus {{
+        QComboBox#ai_provider_combo:hover {{
+            background-color: {t.bg_card_hover};
+            border-color: {t.text_muted};
+        }}
+
+        QComboBox#ai_provider_combo:focus,
+        QComboBox#ai_provider_combo:on,
+        QLineEdit#ai_token_input:focus {{
             border-color: {t.border_accent};
+        }}
+
+        QComboBox#theme_combo::drop-down,
+        QComboBox#ai_provider_combo::drop-down {{
+            subcontrol-origin: padding;
+            subcontrol-position: top right;
+            width: 26px;
+            border: none;
+        }}
+
+        QComboBox#theme_combo::down-arrow,
+        QComboBox#ai_provider_combo::down-arrow {{
+            width: 8px;
+            height: 8px;
+        }}
+
+        QComboBox#theme_combo QAbstractItemView,
+        QComboBox#ai_provider_combo QAbstractItemView {{
+            background-color: {t.bg_card};
+            color: {t.text_primary};
+            border: 1px solid {t.border_card};
+            border-radius: 4px;
+            outline: none;
+            padding: 4px;
+            selection-background-color: {t.bg_card_hover};
+            selection-color: {t.accent_secondary};
+        }}
+
+        QComboBox#theme_combo QAbstractItemView::item,
+        QComboBox#ai_provider_combo QAbstractItemView::item {{
+            padding: 0 10px;
+            border: none;
+            font-size: 12px;
+            font-weight: 500;
+        }}
+
+        QComboBox#theme_combo QAbstractItemView::item:hover,
+        QComboBox#ai_provider_combo QAbstractItemView::item:hover {{
+            background-color: {t.bg_card_hover};
+            color: {t.text_primary};
         }}
 
         QPushButton#remove_ai_token {{

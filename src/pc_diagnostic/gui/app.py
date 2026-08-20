@@ -28,7 +28,6 @@ if PYSIDE6_AVAILABLE:
     from PySide6.QtWidgets import (
         QApplication,
         QButtonGroup,
-        QComboBox,
         QHBoxLayout,
         QLabel,
         QMainWindow,
@@ -37,6 +36,8 @@ if PYSIDE6_AVAILABLE:
         QVBoxLayout,
         QWidget,
     )
+
+    from pc_diagnostic.gui.components.combo_box import ProfessionalComboBox
 else:
     QMainWindow = object  # type: ignore[misc,assignment]
 
@@ -156,7 +157,7 @@ class MainWindow(QMainWindow):
         status_layout.addWidget(self.alert_badge)
 
         # Theme Switcher Selector
-        self.theme_combo = QComboBox()
+        self.theme_combo = ProfessionalComboBox()
         self.theme_combo.setObjectName("theme_combo")
         self.theme_combo.addItem("OLED Stealth", ThemeMode.OLED_STEALTH)
         self.theme_combo.addItem("Clean Light", ThemeMode.CLEAN_LIGHT)

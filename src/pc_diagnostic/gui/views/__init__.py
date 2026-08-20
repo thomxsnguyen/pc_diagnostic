@@ -9,6 +9,8 @@ from pc_diagnostic.credentials import (
     AIProvider,
     CredentialService,
     CredentialStorageUnavailableError,
+    CredentialTestFailure,
+    CredentialTestResult,
     InvalidCredentialTokenError,
 )
 from pc_diagnostic.gui.views.alerts_view import AlertsView
@@ -21,8 +23,8 @@ if TYPE_CHECKING:
     from pc_diagnostic.gui.bridge import TelemetryBridge
 
 try:
+    from PySide6.QtCore import QThread, Signal
     from PySide6.QtWidgets import (
-        QComboBox,
         QFrame,
         QHBoxLayout,
         QLabel,
@@ -32,10 +34,48 @@ try:
         QWidget,
     )
 
+    from pc_diagnostic.gui.components.combo_box import ProfessionalComboBox
+
     PYSIDE6_AVAILABLE = True
 except ImportError:
     PYSIDE6_AVAILABLE = False
+    QThread = object  # type: ignore[misc,assignment]
     QWidget = object  # type: ignore[misc,assignment]
+
+
+if PYSIDE6_AVAILABLE:
+
+    class ConnectionTestWorkerThread(QThread):
+        """Run credential validation without blocking the GUI thread."""
+
+        connection_test_finished = Signal(object)
+
+        def __init__(
+            self,
+            credential_service: CredentialService,
+            provider: AIProvider,
+            parent: Any = None,
+        ) -> None:
+            super().__init__(parent)
+            self._credential_service = credential_service
+            self._provider = provider
+
+        def run(self) -> None:
+            try:
+                result = self._credential_service.test_token(self._provider)
+            except Exception:
+                result = CredentialTestResult(
+                    success=False,
+                    message="Unable to reach the provider.",
+                    category=CredentialTestFailure.NETWORK,
+                )
+            self.connection_test_finished.emit(result)
+
+else:
+
+    class ConnectionTestWorkerThread:  # type: ignore[no-redef]
+        def __init__(self, *args: Any, **kwargs: Any) -> None:
+            raise RuntimeError("PySide6 is required for connection testing")
 
 
 class BaseView(QWidget):
@@ -66,6 +106,7 @@ class SettingsView(BaseView):
         self._vault_available = True
         self._session_suffixes: dict[AIProvider, str] = {}
         self._provider_callback: Callable[[AIProvider], None] | None = None
+        self._connection_test_worker: ConnectionTestWorkerThread | None = None
         super().__init__(bridge, parent)
 
     def _init_ui(self) -> None:
@@ -125,7 +166,7 @@ class SettingsView(BaseView):
         provider_row.setSpacing(12)
         provider_label = QLabel("Provider")
         provider_label.setObjectName("settings_field_label")
-        self.provider_combo = QComboBox()
+        self.provider_combo = ProfessionalComboBox()
         self.provider_combo.setObjectName("ai_provider_combo")
         self.provider_combo.addItem("OpenAI", AIProvider.OPENAI)
         self.provider_combo.addItem("Gemini", AIProvider.GEMINI)
@@ -187,6 +228,7 @@ class SettingsView(BaseView):
         self.provider_combo.currentIndexChanged.connect(self._on_provider_changed)
         self.token_input.textChanged.connect(self._update_controls)
         self.save_token_button.clicked.connect(self._save_token)
+        self.test_connection_button.clicked.connect(self._test_connection)
         self.remove_token_button.clicked.connect(self._remove_token)
         self._update_controls()
 
@@ -266,6 +308,41 @@ class SettingsView(BaseView):
             self.token_input.clear()
             self._update_controls()
 
+    def _test_connection(self) -> None:
+        if not self._configured or self._connection_test_worker is not None:
+            return
+
+        self.token_input.clear()
+        self._set_status("Testing connection…", "neutral")
+        worker = ConnectionTestWorkerThread(
+            self._credential_service,
+            self.selected_provider,
+            self,
+        )
+        self._connection_test_worker = worker
+        worker.connection_test_finished.connect(
+            self._on_connection_test_finished
+        )
+        worker.finished.connect(self._on_connection_test_stopped)
+        self._update_controls()
+        worker.start()
+
+    def _on_connection_test_finished(
+        self, result: CredentialTestResult
+    ) -> None:
+        self.token_input.clear()
+        self._set_status(
+            result.message,
+            "configured" if result.success else "error",
+        )
+
+    def _on_connection_test_stopped(self) -> None:
+        worker = self._connection_test_worker
+        self._connection_test_worker = None
+        if worker is not None:
+            worker.deleteLater()
+        self._update_controls()
+
     def _set_status(self, text: str, state: str) -> None:
         self.credential_status.setText(text)
         self.credential_status.setProperty("state", state)
@@ -274,15 +351,23 @@ class SettingsView(BaseView):
 
     def _update_controls(self) -> None:
         has_input = bool(self.token_input.text().strip())
+        operation_running = self._connection_test_worker is not None
         self.save_token_button.setText(
             "Replace token" if self._configured else "Save token"
         )
-        self.save_token_button.setEnabled(self._vault_available and has_input)
-        self.remove_token_button.setEnabled(
-            self._vault_available and self._configured
+        self.provider_combo.setEnabled(not operation_running)
+        self.token_input.setEnabled(
+            self._vault_available and not operation_running
         )
-        # Network validation is implemented in the separate connection-test phase.
-        self.test_connection_button.setEnabled(False)
+        self.save_token_button.setEnabled(
+            self._vault_available and has_input and not operation_running
+        )
+        self.remove_token_button.setEnabled(
+            self._vault_available and self._configured and not operation_running
+        )
+        self.test_connection_button.setEnabled(
+            self._vault_available and self._configured and not operation_running
+        )
 
     def showEvent(self, event: Any) -> None:  # noqa: N802
         self._refresh_provider_state()
@@ -296,6 +381,7 @@ class SettingsView(BaseView):
 __all__ = [
     "AlertsView",
     "BaseView",
+    "ConnectionTestWorkerThread",
     "DiagnosticsView",
     "OverviewView",
     "ProcessesView",

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import threading
 from typing import Any
 
 import pytest
@@ -8,6 +9,8 @@ from pc_diagnostic.cache import RollingCache
 from pc_diagnostic.credentials import (
     AIProvider,
     CredentialStorageUnavailableError,
+    CredentialTestFailure,
+    CredentialTestResult,
 )
 from pc_diagnostic.gui.app import MainWindow
 from pc_diagnostic.gui.bridge import PYSIDE6_AVAILABLE, TelemetryBridge
@@ -19,6 +22,9 @@ pytestmark = pytest.mark.skipif(not PYSIDE6_AVAILABLE, reason="PySide6 not insta
 class FakeCredentialService:
     def __init__(self) -> None:
         self.values: dict[AIProvider, str] = {}
+        self.test_calls: list[AIProvider] = []
+        self.test_thread_ids: list[int] = []
+        self.test_result = CredentialTestResult(True, "Connection verified")
 
     def save_token(self, provider: AIProvider, token: str) -> None:
         self.values[provider] = token
@@ -31,6 +37,11 @@ class FakeCredentialService:
 
     def delete_token(self, provider: AIProvider) -> None:
         self.values.pop(provider, None)
+
+    def test_token(self, provider: AIProvider) -> CredentialTestResult:
+        self.test_calls.append(provider)
+        self.test_thread_ids.append(threading.get_ident())
+        return self.test_result
 
 
 class UnavailableCredentialService(FakeCredentialService):
@@ -141,3 +152,45 @@ def test_main_window_routes_provider_selection_to_ai_studio(qtbot: Any) -> None:
     window.settings_view.provider_combo.setCurrentIndex(2)
 
     assert window.diagnostics_view.provider is AIProvider.ANTHROPIC
+
+
+def test_connection_test_runs_on_worker_and_shows_success(qtbot: Any) -> None:
+    service = FakeCredentialService()
+    service.values[AIProvider.OPENAI] = "provider-secret"
+    view = _view(qtbot, service)
+    view._refresh_provider_state()
+    main_thread_id = threading.get_ident()
+
+    assert view.test_connection_button.isEnabled()
+    view.test_connection_button.click()
+    qtbot.waitUntil(lambda: view._connection_test_worker is None, timeout=2000)
+
+    assert service.test_calls == [AIProvider.OPENAI]
+    assert service.test_thread_ids[0] != main_thread_id
+    assert view.credential_status.text() == "Connection verified"
+    assert service.values[AIProvider.OPENAI] == "provider-secret"
+    assert view.test_connection_button.isEnabled()
+
+
+def test_failed_connection_test_is_sanitized_and_keeps_token(qtbot: Any) -> None:
+    service = FakeCredentialService()
+    service.values[AIProvider.OPENAI] = "provider-secret"
+    service.test_result = CredentialTestResult(
+        False,
+        "Authentication failed. Check the stored token.",
+        CredentialTestFailure.UNAUTHORIZED,
+    )
+    view = _view(qtbot, service)
+    view._refresh_provider_state()
+    view.token_input.setText("temporary-input")
+
+    view.test_connection_button.click()
+    qtbot.waitUntil(lambda: view._connection_test_worker is None, timeout=2000)
+
+    assert view.token_input.text() == ""
+    assert view.credential_status.text() == (
+        "Authentication failed. Check the stored token."
+    )
+    assert "provider-secret" not in view.credential_status.text()
+    assert service.values[AIProvider.OPENAI] == "provider-secret"
+    assert view.remove_token_button.isEnabled()

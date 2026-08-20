@@ -3,11 +3,14 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import StrEnum
 from typing import Protocol
+from urllib.error import HTTPError, URLError
+from urllib.request import Request, urlopen
 
 import keyring
 
 SERVICE_NAME = "pc-diagnostic"
 STORAGE_UNAVAILABLE_MESSAGE = "Secure storage unavailable"
+CONNECTION_TEST_TIMEOUT_SECONDS = 5.0
 
 
 class AIProvider(StrEnum):
@@ -16,6 +19,26 @@ class AIProvider(StrEnum):
     OPENAI = "openai"
     GEMINI = "gemini"
     ANTHROPIC = "anthropic"
+
+
+class CredentialTestFailure(StrEnum):
+    """Sanitized connection-test failure categories."""
+
+    UNAUTHORIZED = "unauthorized"
+    TIMEOUT = "timeout"
+    NETWORK = "network"
+    PROVIDER_UNAVAILABLE = "provider_unavailable"
+    NOT_CONFIGURED = "not_configured"
+    SECURE_STORAGE = "secure_storage"
+
+
+@dataclass(frozen=True)
+class CredentialTestResult:
+    """Non-sensitive result returned by a provider connection test."""
+
+    success: bool
+    message: str
+    category: CredentialTestFailure | None = None
 
 
 @dataclass(frozen=True)
@@ -42,6 +65,35 @@ PROVIDER_CREDENTIALS: dict[AIProvider, ProviderCredentialConfig] = {
 }
 
 
+@dataclass(frozen=True)
+class ProviderValidationConfig:
+    """Prompt-free endpoint configuration for provider authentication tests."""
+
+    url: str
+    token_header: str
+    static_headers: tuple[tuple[str, str], ...] = ()
+
+
+PROVIDER_VALIDATION: dict[AIProvider, ProviderValidationConfig] = {
+    AIProvider.OPENAI: ProviderValidationConfig(
+        url="https://api.openai.com/v1/models",
+        token_header="Authorization",
+    ),
+    AIProvider.GEMINI: ProviderValidationConfig(
+        url=(
+            "https://generativelanguage.googleapis.com/v1beta/models"
+            "?pageSize=1"
+        ),
+        token_header="x-goog-api-key",
+    ),
+    AIProvider.ANTHROPIC: ProviderValidationConfig(
+        url="https://api.anthropic.com/v1/models?limit=1",
+        token_header="x-api-key",
+        static_headers=(("anthropic-version", "2023-06-01"),),
+    ),
+}
+
+
 class CredentialBackend(Protocol):
     """Minimal keyring interface used by the credential service."""
 
@@ -50,6 +102,17 @@ class CredentialBackend(Protocol):
     def get_password(self, service: str, account: str) -> str | None: ...
 
     def delete_password(self, service: str, account: str) -> None: ...
+
+
+class ValidationTransport(Protocol):
+    """Minimal injectable HTTP transport used by connection tests."""
+
+    def __call__(self, request: Request, timeout: float) -> int: ...
+
+
+def _send_validation_request(request: Request, timeout: float) -> int:
+    with urlopen(request, timeout=timeout) as response:
+        return int(response.getcode())
 
 
 class CredentialStorageUnavailableError(RuntimeError):
@@ -66,8 +129,15 @@ class InvalidCredentialTokenError(ValueError):
 class CredentialService:
     """Store AI provider tokens exclusively in the operating system vault."""
 
-    def __init__(self, backend: CredentialBackend | None = None) -> None:
+    def __init__(
+        self,
+        backend: CredentialBackend | None = None,
+        validation_transport: ValidationTransport | None = None,
+    ) -> None:
         self._backend = backend or keyring
+        self._validation_transport = (
+            validation_transport or _send_validation_request
+        )
 
     def save_token(self, provider: AIProvider, token: str) -> None:
         """Save or replace a provider token in secure storage."""
@@ -103,3 +173,94 @@ class CredentialService:
             self._backend.delete_password(SERVICE_NAME, account)
         except Exception:
             raise CredentialStorageUnavailableError from None
+
+    def test_token(self, provider: AIProvider) -> CredentialTestResult:
+        """Verify a stored token with a minimal prompt-free provider request."""
+        try:
+            token = self.get_token(provider)
+        except CredentialStorageUnavailableError:
+            return CredentialTestResult(
+                success=False,
+                message=STORAGE_UNAVAILABLE_MESSAGE,
+                category=CredentialTestFailure.SECURE_STORAGE,
+            )
+
+        if token is None:
+            return CredentialTestResult(
+                success=False,
+                message="No stored token",
+                category=CredentialTestFailure.NOT_CONFIGURED,
+            )
+
+        request = self._build_validation_request(provider, token)
+        try:
+            status = self._validation_transport(
+                request, CONNECTION_TEST_TIMEOUT_SECONDS
+            )
+        except HTTPError as exc:
+            return self._result_for_status(exc.code)
+        except TimeoutError:
+            return CredentialTestResult(
+                success=False,
+                message="Connection timed out. Try again.",
+                category=CredentialTestFailure.TIMEOUT,
+            )
+        except URLError as exc:
+            if isinstance(exc.reason, TimeoutError):
+                return CredentialTestResult(
+                    success=False,
+                    message="Connection timed out. Try again.",
+                    category=CredentialTestFailure.TIMEOUT,
+                )
+            return CredentialTestResult(
+                success=False,
+                message="Unable to reach the provider.",
+                category=CredentialTestFailure.NETWORK,
+            )
+        except OSError:
+            return CredentialTestResult(
+                success=False,
+                message="Unable to reach the provider.",
+                category=CredentialTestFailure.NETWORK,
+            )
+        except Exception:
+            return CredentialTestResult(
+                success=False,
+                message="Unable to reach the provider.",
+                category=CredentialTestFailure.NETWORK,
+            )
+        return self._result_for_status(status)
+
+    @staticmethod
+    def _build_validation_request(provider: AIProvider, token: str) -> Request:
+        config = PROVIDER_VALIDATION[provider]
+        headers = dict(config.static_headers)
+        headers[config.token_header] = (
+            f"Bearer {token}" if provider is AIProvider.OPENAI else token
+        )
+        return Request(config.url, headers=headers, method="GET")
+
+    @staticmethod
+    def _result_for_status(status: int) -> CredentialTestResult:
+        if 200 <= status < 300:
+            return CredentialTestResult(
+                success=True,
+                message="Connection verified",
+            )
+        if status in {401, 403}:
+            return CredentialTestResult(
+                success=False,
+                message="Authentication failed. Check the stored token.",
+                category=CredentialTestFailure.UNAUTHORIZED,
+            )
+        if status in {408, 504}:
+            return CredentialTestResult(
+                success=False,
+                message="Connection timed out. Try again.",
+                category=CredentialTestFailure.TIMEOUT,
+            )
+        return CredentialTestResult(
+            success=False,
+            message="Provider is currently unavailable.",
+            category=CredentialTestFailure.PROVIDER_UNAVAILABLE,
+        )

@@ -1,16 +1,20 @@
 from __future__ import annotations
 
 from pathlib import Path
+from urllib.error import HTTPError, URLError
+from urllib.request import Request
 
 import pytest
 
 from pc_diagnostic.credentials import (
     PROVIDER_CREDENTIALS,
+    PROVIDER_VALIDATION,
     SERVICE_NAME,
     STORAGE_UNAVAILABLE_MESSAGE,
     AIProvider,
     CredentialService,
     CredentialStorageUnavailableError,
+    CredentialTestFailure,
     InvalidCredentialTokenError,
 )
 
@@ -140,3 +144,133 @@ def test_service_uses_stable_keyring_service_name() -> None:
     service.save_token(AIProvider.GEMINI, "token")
 
     assert backend.calls == [("set", SERVICE_NAME, "gemini_api_key")]
+
+
+@pytest.mark.parametrize(
+    ("provider", "header", "header_value"),
+    [
+        (AIProvider.OPENAI, "Authorization", "Bearer provider-secret"),
+        (AIProvider.GEMINI, "X-goog-api-key", "provider-secret"),
+        (AIProvider.ANTHROPIC, "X-api-key", "provider-secret"),
+    ],
+)
+def test_connection_test_uses_prompt_free_provider_request(
+    provider: AIProvider,
+    header: str,
+    header_value: str,
+) -> None:
+    backend = MemoryBackend()
+    requests: list[tuple[Request, float]] = []
+
+    def transport(request: Request, timeout: float) -> int:
+        requests.append((request, timeout))
+        return 200
+
+    service = CredentialService(backend, transport)
+    service.save_token(provider, "provider-secret")
+    backend.calls.clear()
+
+    result = service.test_token(provider)
+
+    assert result.success
+    assert result.message == "Connection verified"
+    assert result.category is None
+    assert backend.calls == [
+        ("get", SERVICE_NAME, PROVIDER_CREDENTIALS[provider].account)
+    ]
+    request, timeout = requests[0]
+    assert request.full_url == PROVIDER_VALIDATION[provider].url
+    assert request.method == "GET"
+    assert request.data is None
+    assert request.get_header(header) == header_value
+    assert "provider-secret" not in request.full_url
+    assert timeout == 5.0
+    if provider is AIProvider.ANTHROPIC:
+        assert request.get_header("Anthropic-version") == "2023-06-01"
+
+
+def test_connection_test_without_token_does_not_make_request() -> None:
+    backend = MemoryBackend()
+    called = False
+
+    def transport(_request: Request, _timeout: float) -> int:
+        nonlocal called
+        called = True
+        return 200
+
+    result = CredentialService(backend, transport).test_token(AIProvider.OPENAI)
+
+    assert not result.success
+    assert result.category is CredentialTestFailure.NOT_CONFIGURED
+    assert not called
+
+
+@pytest.mark.parametrize(
+    ("status", "category"),
+    [
+        (401, CredentialTestFailure.UNAUTHORIZED),
+        (403, CredentialTestFailure.UNAUTHORIZED),
+        (408, CredentialTestFailure.TIMEOUT),
+        (429, CredentialTestFailure.PROVIDER_UNAVAILABLE),
+        (503, CredentialTestFailure.PROVIDER_UNAVAILABLE),
+    ],
+)
+def test_connection_test_sanitizes_http_failures(
+    status: int,
+    category: CredentialTestFailure,
+) -> None:
+    backend = MemoryBackend()
+    backend.values[(SERVICE_NAME, "openai_api_key")] = "provider-secret"
+
+    def transport(request: Request, _timeout: float) -> int:
+        raise HTTPError(
+            request.full_url,
+            status,
+            "provider-secret in response",
+            {},
+            None,
+        )
+
+    result = CredentialService(backend, transport).test_token(AIProvider.OPENAI)
+
+    assert not result.success
+    assert result.category is category
+    assert "provider-secret" not in result.message
+    assert "provider-secret" not in repr(result)
+    assert (SERVICE_NAME, "openai_api_key") in backend.values
+    assert not any(call[0] == "delete" for call in backend.calls)
+
+
+@pytest.mark.parametrize(
+    ("error", "category"),
+    [
+        (TimeoutError("provider-secret"), CredentialTestFailure.TIMEOUT),
+        (
+            URLError("provider-secret in network response"),
+            CredentialTestFailure.NETWORK,
+        ),
+    ],
+)
+def test_connection_test_sanitizes_transport_failures(
+    error: Exception,
+    category: CredentialTestFailure,
+) -> None:
+    backend = MemoryBackend()
+    backend.values[(SERVICE_NAME, "openai_api_key")] = "provider-secret"
+
+    def transport(_request: Request, _timeout: float) -> int:
+        raise error
+
+    result = CredentialService(backend, transport).test_token(AIProvider.OPENAI)
+
+    assert not result.success
+    assert result.category is category
+    assert "provider-secret" not in result.message
+
+
+def test_connection_test_sanitizes_storage_failure() -> None:
+    result = CredentialService(BrokenBackend()).test_token(AIProvider.OPENAI)
+
+    assert not result.success
+    assert result.message == STORAGE_UNAVAILABLE_MESSAGE
+    assert result.category is CredentialTestFailure.SECURE_STORAGE
