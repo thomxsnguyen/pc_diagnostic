@@ -2,7 +2,11 @@
 
 import os
 
-from PyInstaller.utils.hooks import collect_data_files
+from PyInstaller.utils.hooks import (
+    collect_data_files,
+    collect_submodules,
+    copy_metadata,
+)
 
 block_cipher = None
 
@@ -14,6 +18,8 @@ crewai_datas = collect_data_files(
     includes=['translations/*.json', 'utilities/__init__.py'],
     include_py_files=True,
 )
+keyring_hiddenimports = collect_submodules('keyring.backends')
+keyring_datas = copy_metadata('keyring')
 smc_helper = 'src/pc_diagnostic/providers/smc_helper'
 native_binaries = (
     [(smc_helper, 'pc_diagnostic/providers')] if os.path.exists(smc_helper) else []
@@ -23,11 +29,13 @@ a = Analysis(
     ['src/pc_diagnostic/main.py'],
     pathex=[],
     binaries=native_binaries,
-    datas=pyqtgraph_datas + crewai_datas,
+    datas=pyqtgraph_datas + crewai_datas + keyring_datas,
     hiddenimports=[
         'psutil',
         'rich',
         'crewai',
+        'keyring',
+        *keyring_hiddenimports,
         'PySide6.QtCore',
         'PySide6.QtGui',
         'PySide6.QtWidgets',

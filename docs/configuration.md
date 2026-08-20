@@ -4,19 +4,46 @@ This document serves as the single source of truth for all runtime configuration
 
 ---
 
-## 1. Environment Variables
+## 1. AI Provider Credentials
 
-PC Diagnostic uses `python-dotenv` to load environment variables from a `.env` file in the project root directory.
+In the desktop application, configure the selected provider under
+**Settings → AI Provider**. Tokens saved there use the operating system
+credential vault through `keyring`; they are not written to application
+settings or `.env`.
+
+For the selected provider, diagnosis resolves credentials in this order:
+
+1. Token stored in the operating system credential vault.
+2. The selected provider's environment variable.
+3. The local rule-based analyzer when neither credential source is available,
+   or when the AI request cannot complete.
+
+A stored token therefore takes precedence over an environment value for the
+same provider. The application temporarily exposes only that provider's
+variable for the CrewAI call and restores its previous value afterward.
+
+### 1.1 Development `.env` Fallback
+
+The environment variables below remain a development fallback. At startup,
+PC Diagnostic uses `python-dotenv` when available to load a `.env` file from the
+project root. The project `.gitignore` includes `.env`; never remove that entry
+or commit a token.
 
 | Variable | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `OPENAI_API_KEY` | String | *None* | OpenAI API key for LLM-powered multi-agent diagnostics via CrewAI. |
-| `GEMINI_API_KEY` | String | *None* | Google Gemini API key for CrewAI diagnostics backend. |
-| `ANTHROPIC_API_KEY` | String | *None* | Anthropic Claude API key for CrewAI diagnostics backend. |
+| `OPENAI_API_KEY` | String | *None* | Development fallback for the selected OpenAI provider. |
+| `GEMINI_API_KEY` | String | *None* | Development fallback for the selected Gemini provider. |
+| `ANTHROPIC_API_KEY` | String | *None* | Development fallback for the selected Anthropic provider. |
 
-### Environment Variable Behavior:
-- **LLM Detection:** When any of the supported API keys are present and the `crewai` library is installed, the diagnostic engine automatically initializes `CrewAI` with a `Senior Systems Performance Analyst` agent.
-- **Graceful Fallback:** If no API key is defined or if the network/API call fails, the system automatically falls back to `LocalDiagnosticAnalyzer` (the built-in heuristic rule analyzer) without throwing errors.
+Example development file:
+
+```dotenv
+OPENAI_API_KEY="development-token"
+```
+
+Do not use `.env` as the desktop application's normal credential store. The
+packaged application and development execution use the same vault-first
+resolution rules.
 
 ---
 

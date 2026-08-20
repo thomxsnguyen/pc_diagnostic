@@ -104,7 +104,11 @@ def sign_binary(target_path: str, description: str) -> None:
 
 def build_pyinstaller_binary() -> None:
     """Run PyInstaller using the spec configuration."""
-    missing = [name for name in ("PySide6", "pyqtgraph") if find_spec(name) is None]
+    missing = [
+        name
+        for name in ("PySide6", "pyqtgraph", "keyring")
+        if find_spec(name) is None
+    ]
     if missing:
         print("[ERROR] Missing GUI build dependencies: " + ", ".join(missing))
         sys.exit(1)

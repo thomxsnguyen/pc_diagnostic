@@ -150,7 +150,33 @@ PowerShell WMI queries on slow or heavily loaded Windows machines can occasional
 
 ## 5. AI Diagnostics Engine Troubleshooting
 
-### 5.1 Issue: AI Diagnosis Returns "Local Heuristic Report" Instead of CrewAI Analysis
+### 5.1 Secure Credential Storage by Platform
+
+Tokens saved under **Settings → AI Provider** use the stable service name
+`pc-diagnostic` and remain in the operating system's credential vault:
+
+- **macOS:** `keyring` stores the token in the user's macOS Keychain. macOS may
+  ask the user to unlock or approve Keychain access.
+- **Windows:** `keyring` stores the token through Windows Credential Manager
+  (Credential Locker) for the current Windows user.
+
+The application stores separate entries for OpenAI, Gemini, and Anthropic. It
+never falls back to a plaintext credential file when the native vault cannot be
+used.
+
+#### Issue: "Secure storage unavailable"
+
+This exact, sanitized message means that `keyring` could not access a usable
+credential backend. The application does not display or log the backend's raw
+error and does not save the token elsewhere.
+
+On macOS, confirm that the login Keychain is unlocked and that Keychain Access
+does not show a denied application entry. On Windows, confirm that Credential
+Manager is available for the current user. Restart the application after
+correcting vault access. For development only, the selected provider's ignored
+`.env` variable can still be used as the documented fallback.
+
+### 5.2 Issue: AI Diagnosis Returns "Local Heuristic Report" Instead of CrewAI Analysis
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
@@ -159,18 +185,23 @@ PowerShell WMI queries on slow or heavily loaded Windows machines can occasional
 │  [User presses 'd']                                                     │
 │         │                                                               │
 │         ▼                                                               │
-│  Is CrewAI installed AND (OPENAI/GEMINI/ANTHROPIC_API_KEY present)?     │
-│         ├───────────► YES: Executes CrewAI Multi-Agent Diagnostic Crew  │
+│  Selected provider token in OS vault?                                  │
+│         ├───────────► NO: Check selected provider environment variable │
 │         │                                                               │
-│         └───────────► NO:  Executes LocalDiagnosticAnalyzer (Rule-Based)│
+│         ▼                                                               │
+│  Credential available and CrewAI installed?                            │
+│         ├───────────► YES: Executes CrewAI diagnostic                   │
+│         └───────────► NO:  Executes LocalDiagnosticAnalyzer             │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
-#### Cause A: Missing API Key
-No API keys were detected in the environment or `.env` file.
+#### Cause A: Missing Provider Credential
+No token was found in the operating system vault or in the selected provider's
+environment variable.
 
 **Resolution:**
-Create a `.env` file in the project root:
+Save the token under **Settings → AI Provider**. For development only, create an
+ignored `.env` file in the project root:
 ```bash
 OPENAI_API_KEY="sk-..."
 ```
@@ -178,7 +209,7 @@ OPENAI_API_KEY="sk-..."
 #### Cause B: API Rate Limit or Network Timeout
 If CrewAI encounters an API error (e.g. HTTP 429 Too Many Requests, expired quota, or network drop), it automatically catches the exception, logs a warning in `pc_diagnostic.log`, and immediately falls back to `LocalDiagnosticAnalyzer` so the user is never left without a diagnosis.
 
-### 5.2 Issue: Pressing `d` Does Not Trigger a New Diagnosis
+### 5.3 Issue: Pressing `d` Does Not Trigger a New Diagnosis
 - **Cause:** Diagnostic Cooldown.
 - **Explanation:** A **10-second cooldown** is enforced between diagnosis runs to prevent accidental spamming and excessive LLM token consumption. The overlay displays the existing report until the cooldown expires.
 

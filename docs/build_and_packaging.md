@@ -83,8 +83,15 @@ pyinstaller --clean pc_diagnostic.spec
 The spec file defines:
 - Entry point: `src/pc_diagnostic/main.py`
 - Bundled data files (including the SMC helper binary)
-- Hidden imports for dynamic dependencies
+- Hidden imports for dynamic dependencies, including all `keyring.backends`
 - Output: single-file executable in `dist/`
+
+`keyring` discovers credential backends dynamically, so the specification uses
+`collect_submodules("keyring.backends")` and includes the package metadata used
+for backend discovery. This ensures packaged macOS builds contain the macOS
+Keychain backend and packaged Windows builds contain the Windows Credential
+Manager backend. `build_binaries.py` also stops before the build if `keyring`
+is unavailable.
 
 ---
 
@@ -128,6 +135,7 @@ dependencies = [
     "psutil>=5.9.0",     # Cross-platform system monitoring
     "rich>=13.0.0",      # Terminal UI rendering
     "crewai>=0.1.0",     # AI diagnostics (optional at runtime)
+    "keyring>=25.0.0",   # Native operating-system credential storage
 ]
 
 [dependency-groups]
