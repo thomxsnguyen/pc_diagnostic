@@ -5,9 +5,11 @@ import html
 import logging
 import re
 from collections.abc import Callable, Iterable
+from functools import partial
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
+from pc_diagnostic.credentials import AIProvider
 from pc_diagnostic.diagnostics.crew import run_diagnosis
 
 if TYPE_CHECKING:
@@ -214,10 +216,19 @@ class DiagnosticsView(QWidget):
         super().__init__(parent)
         self.bridge = bridge
         self._diagnosis_runner = diagnosis_runner
+        self._provider: AIProvider | None = None
         self._worker: DiagnosticWorkerThread | None = None
         self._evidence: dict[str, Any] = {}
         self._report_markdown = ""
         self._init_ui()
+
+    @property
+    def provider(self) -> AIProvider | None:
+        return self._provider
+
+    def set_provider(self, provider: AIProvider) -> None:
+        """Select the provider identifier without passing credential data."""
+        self._provider = provider
 
     def _init_ui(self) -> None:
         layout = QVBoxLayout(self)
@@ -375,8 +386,11 @@ class DiagnosticsView(QWidget):
         self.run_button.setEnabled(False)
         self.progress_bar.setValue(0)
 
+        diagnosis_runner = self._diagnosis_runner
+        if diagnosis_runner is None and self._provider is not None:
+            diagnosis_runner = partial(run_diagnosis, provider=self._provider)
         worker = DiagnosticWorkerThread(
-            self._evidence, self, diagnosis_runner=self._diagnosis_runner
+            self._evidence, self, diagnosis_runner=diagnosis_runner
         )
         self._worker = worker
         worker.status_updated.connect(self.status_label.setText)

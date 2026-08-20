@@ -4,6 +4,7 @@ import logging
 import sys
 from typing import TYPE_CHECKING, Any, cast
 
+from pc_diagnostic.credentials import CredentialService
 from pc_diagnostic.gui.bridge import PYSIDE6_AVAILABLE, TelemetryBridge
 from pc_diagnostic.gui.theme import ThemeManager, ThemeMode
 from pc_diagnostic.gui.tray import TrayManager
@@ -48,6 +49,7 @@ class MainWindow(QMainWindow):
         bridge: TelemetryBridge,
         theme_manager: ThemeManager | None = None,
         parent: Any = None,
+        credential_service: CredentialService | None = None,
     ) -> None:
         if not PYSIDE6_AVAILABLE:
             raise RuntimeError(
@@ -57,6 +59,7 @@ class MainWindow(QMainWindow):
         super().__init__(parent)
         self.bridge = bridge
         self.theme_manager = theme_manager or ThemeManager()
+        self.credential_service = credential_service or CredentialService()
 
         self.setWindowTitle("PC Diagnostic — Telemetry & AI Diagnostic Monitor")
         self.setFixedSize(1280, 900)
@@ -96,7 +99,10 @@ class MainWindow(QMainWindow):
         self.processes_view = ProcessesView(self.bridge)
         self.alerts_view = AlertsView(self.bridge)
         self.diagnostics_view = DiagnosticsView(self.bridge)
-        self.settings_view = SettingsView(self.bridge)
+        self.settings_view = SettingsView(
+            self.bridge, credential_service=self.credential_service
+        )
+        self.settings_view.set_provider_callback(self.diagnostics_view.set_provider)
 
         self.stack.addWidget(self.overview_view)  # Index 0
         self.stack.addWidget(self.sensors_view)  # Index 1

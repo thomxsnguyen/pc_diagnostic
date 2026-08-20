@@ -347,7 +347,7 @@ class ThemeManager:
 
         /* --- AI Studio --- */
         #studio_page_title, #overview_page_title, #process_page_title,
-        #sensors_page_title, #alerts_page_title {{
+        #sensors_page_title, #alerts_page_title, #settings_page_title {{
             background-color: transparent;
             color: {t.text_primary};
             font-size: 18px;
@@ -359,6 +359,7 @@ class ThemeManager:
         #process_page_subtitle, #process_section_subtitle,
         #sensors_page_subtitle, #sensors_section_subtitle,
         #alerts_page_subtitle, #alerts_section_subtitle,
+        #settings_page_subtitle, #settings_section_subtitle,
         #recommendation_categories {{
             background-color: transparent;
             color: {t.text_secondary};
@@ -366,7 +367,7 @@ class ThemeManager:
         }}
 
         #studio_section_title, #overview_section_title, #process_section_title,
-        #sensors_section_title, #alerts_section_title {{
+        #sensors_section_title, #alerts_section_title, #settings_section_title {{
             background-color: transparent;
             color: {t.text_primary};
             font-size: 13px;
@@ -672,6 +673,85 @@ class ThemeManager:
         QSlider#alert_slider::handle:horizontal:hover {{
             background-color: {t.text_primary};
             border-color: {t.accent_primary};
+        }}
+
+        /* --- Settings --- */
+        #settings_page_title, #settings_page_subtitle,
+        #settings_section_title, #settings_section_subtitle,
+        #settings_field_label, #settings_security_note,
+        #ai_credential_status {{
+            background-color: transparent;
+        }}
+
+        QFrame#ai_credential_panel {{
+            background-color: {t.bg_input};
+            border: 1px solid {t.border_subtle};
+            border-radius: 5px;
+        }}
+
+        #settings_field_label {{
+            color: {t.text_primary};
+            font-size: 12px;
+            font-weight: 600;
+        }}
+
+        #settings_security_note {{
+            color: {t.text_muted};
+            font-size: 10px;
+        }}
+
+        #ai_credential_status {{
+            color: {t.text_secondary};
+            border: 1px solid {t.border_card};
+            border-radius: 4px;
+            padding: 4px 10px;
+            font-size: 11px;
+            font-weight: 600;
+        }}
+
+        #ai_credential_status[state="configured"] {{
+            color: {t.accent_secondary};
+            border-color: {t.border_accent};
+        }}
+
+        #ai_credential_status[state="error"] {{
+            color: {t.status_critical};
+            border-color: {t.status_critical};
+        }}
+
+        QComboBox#ai_provider_combo, QLineEdit#ai_token_input {{
+            background-color: {t.bg_card};
+            color: {t.text_primary};
+            border: 1px solid {t.border_card};
+            border-radius: 4px;
+            padding: 7px 10px;
+            selection-background-color: {t.accent_primary};
+        }}
+
+        QComboBox#ai_provider_combo {{
+            min-width: 150px;
+            padding-right: 26px;
+        }}
+
+        QComboBox#ai_provider_combo:focus, QLineEdit#ai_token_input:focus {{
+            border-color: {t.border_accent};
+        }}
+
+        QPushButton#remove_ai_token {{
+            color: {t.text_secondary};
+        }}
+
+        QPushButton#remove_ai_token:hover {{
+            color: {t.status_critical};
+            border-color: {t.status_critical};
+        }}
+
+        QPushButton#ai_save_token:disabled,
+        QPushButton#ai_test_connection:disabled,
+        QPushButton#remove_ai_token:disabled {{
+            background-color: {t.bg_card};
+            color: {t.text_muted};
+            border: 1px solid {t.border_subtle};
         }}
 
         QHeaderView::section {{

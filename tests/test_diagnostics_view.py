@@ -110,3 +110,30 @@ def test_report_exports(qtbot: Any, tmp_path: Path) -> None:
     assert markdown_path.read_text(encoding="utf-8").startswith("# Report")
     assert "<!doctype html>" in html_path.read_text(encoding="utf-8")
     assert pdf_path.read_bytes().startswith(b"%PDF")
+
+
+@pytest.mark.skipif(not PYSIDE6_AVAILABLE, reason="PySide6 is unavailable")
+def test_selected_provider_is_passed_to_default_diagnosis_runner(
+    qtbot: Any, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from pc_diagnostic.credentials import AIProvider
+
+    captured: list[AIProvider] = []
+
+    def diagnose(_evidence: dict[str, object], provider: AIProvider) -> str:
+        captured.append(provider)
+        return "# Provider report"
+
+    monkeypatch.setattr(
+        "pc_diagnostic.gui.views.diagnostics_view.run_diagnosis", diagnose
+    )
+    cache = RollingCache()
+    cache.push(_snapshot())
+    view = DiagnosticsView(TelemetryBridge(cache))
+    view.set_provider(AIProvider.GEMINI)
+    qtbot.addWidget(view)
+
+    view.start_diagnosis()
+    qtbot.waitUntil(lambda: view._worker is None, timeout=2000)
+
+    assert captured == [AIProvider.GEMINI]
