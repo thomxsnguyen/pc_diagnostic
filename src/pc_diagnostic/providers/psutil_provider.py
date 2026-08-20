@@ -1,5 +1,6 @@
 import logging
 import platform
+import re
 import subprocess
 import time
 
@@ -433,7 +434,7 @@ class PsutilProvider(Provider):
         return readings
 
     def _get_mac_virtual_memory(self) -> dict[str, float]:
-        """Fetch exact macOS Activity Monitor memory metrics natively using psutil."""
+        """Fetch memory usage using macOS Activity Monitor page semantics."""
         res = {
             "total": float(self._total_memory),
             "used": 0.0,
@@ -445,13 +446,19 @@ class PsutilProvider(Provider):
         try:
             vm = psutil.virtual_memory()
             total_bytes = float(vm.total)
-            available_bytes = float(vm.available)
-            used_bytes = max(0.0, total_bytes - available_bytes)
+            native_usage = self._get_mac_activity_memory_usage(total_bytes)
+            if native_usage is None:
+                available_bytes = float(vm.available)
+                used_bytes = max(0.0, total_bytes - available_bytes)
+            else:
+                used_bytes, available_bytes = native_usage
 
             res["total"] = total_bytes
             res["used"] = used_bytes
             res["available"] = available_bytes
-            res["percent"] = vm.percent
+            res["percent"] = (
+                (used_bytes / total_bytes) * 100.0 if total_bytes > 0 else 0.0
+            )
 
             if hasattr(vm, "wired"):
                 res["wired"] = float(vm.wired)
@@ -466,6 +473,44 @@ class PsutilProvider(Provider):
             if hasattr(vm, "wired"):
                 res["wired"] = float(vm.wired)
         return res
+
+    @staticmethod
+    def _get_mac_activity_memory_usage(
+        total_bytes: float,
+    ) -> tuple[float, float] | None:
+        """Calculate used RAM from native free, speculative, and cached pages."""
+        try:
+            output = subprocess.check_output(["vm_stat"], timeout=1.0)
+            text = output.decode("utf-8", errors="replace")
+            page_size_match = re.search(
+                r"page size of\s+(\d+)\s+bytes", text
+            )
+            if page_size_match is None:
+                return None
+
+            pages: dict[str, int] = {}
+            for line in text.splitlines():
+                if ":" not in line:
+                    continue
+                name, raw_value = line.split(":", 1)
+                value = raw_value.strip().rstrip(".")
+                if value.isdigit():
+                    pages[name.strip()] = int(value)
+
+            required = ("Pages free", "Pages speculative", "File-backed pages")
+            if any(name not in pages for name in required):
+                return None
+
+            page_size = int(page_size_match.group(1))
+            available_pages = sum(pages[name] for name in required)
+            available_bytes = min(
+                total_bytes,
+                max(0.0, float(available_pages * page_size)),
+            )
+            used_bytes = max(0.0, total_bytes - available_bytes)
+            return used_bytes, available_bytes
+        except (OSError, subprocess.SubprocessError, ValueError):
+            return None
 
     def _get_cpu_model(self) -> str:
         """Helper to retrieve processor brand info across systems."""

@@ -1,5 +1,7 @@
 from unittest.mock import MagicMock, patch
 
+import pytest
+
 from pc_diagnostic.models import MetricUnit
 from pc_diagnostic.providers.psutil_provider import PsutilProvider
 
@@ -17,6 +19,64 @@ def test_psutil_provider_uses_monotonic_uptime_fallback() -> None:
         provider = PsutilProvider()
 
     assert provider._boot_time == 750.0
+
+
+def test_macos_memory_matches_activity_monitor_page_semantics() -> None:
+    gib = 1024.0**3
+    total = 24.0 * gib
+    page_size = 16_384
+    vm_stat = b"""Mach Virtual Memory Statistics: (page size of 16384 bytes)
+Pages free:                                    10000.
+Pages active:                                 400000.
+Pages inactive:                               390000.
+Pages speculative:                              1000.
+Pages wired down:                             200000.
+File-backed pages:                            250000.
+Pages occupied by compressor:                 500000.
+"""
+    mock_vm = MagicMock(
+        total=total,
+        available=6.0 * gib,
+        percent=75.0,
+        wired=3.0 * gib,
+    )
+    provider = PsutilProvider.__new__(PsutilProvider)
+    provider._total_memory = total
+
+    with (
+        patch("psutil.virtual_memory", return_value=mock_vm),
+        patch("subprocess.check_output", return_value=vm_stat),
+    ):
+        memory = provider._get_mac_virtual_memory()
+
+    expected_available = (10_000 + 1_000 + 250_000) * page_size
+    expected_used = total - expected_available
+    assert memory["available"] == expected_available
+    assert memory["used"] == expected_used
+    assert memory["percent"] == expected_used / total * 100.0
+    assert memory["percent"] == pytest.approx(83.4, abs=0.1)
+
+
+def test_macos_memory_falls_back_to_psutil_when_vm_stat_is_unavailable() -> None:
+    gib = 1024.0**3
+    mock_vm = MagicMock(
+        total=24.0 * gib,
+        available=6.0 * gib,
+        percent=75.0,
+        wired=3.0 * gib,
+    )
+    provider = PsutilProvider.__new__(PsutilProvider)
+    provider._total_memory = mock_vm.total
+
+    with (
+        patch("psutil.virtual_memory", return_value=mock_vm),
+        patch("subprocess.check_output", side_effect=OSError),
+    ):
+        memory = provider._get_mac_virtual_memory()
+
+    assert memory["used"] == 18.0 * gib
+    assert memory["available"] == 6.0 * gib
+    assert memory["percent"] == 75.0
 
 
 def test_psutil_provider_reads() -> None:
