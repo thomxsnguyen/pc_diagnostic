@@ -119,8 +119,21 @@ Exits with code 1 if the binary is missing.
 
 ## macOS Packaging (`package_mac.py`)
 
-A separate script for creating macOS distribution packages (DMG, etc.).
-See `package_mac.py` for details.
+Build the signed application bundle and drag-and-drop installer after creating
+the standalone binary:
+
+```bash
+python build_binaries.py
+python package_mac.py
+```
+
+The runnable application is `dist/PC Diagnostic.app`; the distributable image
+is `dist/PC-Diagnostic-Installer.dmg`. Open the DMG, drag **PC Diagnostic** into
+Applications, then launch it from Applications. Finder-launched packaged builds
+default to the GUI even though they do not have an attached terminal. Packaged
+macOS logs are written to
+`~/Library/Logs/PC Diagnostic/pc_diagnostic.log` rather than the launch working
+directory.
 
 ---
 

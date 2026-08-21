@@ -2,8 +2,11 @@ from __future__ import annotations
 
 import argparse
 import logging
+import os
+import platform
 import sys
 import time
+from pathlib import Path
 
 try:
     from dotenv import load_dotenv
@@ -19,6 +22,49 @@ from pc_diagnostic.gui import PYSIDE6_AVAILABLE, ThemeMode, run_gui
 from pc_diagnostic.providers.registry import register_providers
 
 logger = logging.getLogger("pc_diagnostic")
+
+
+def _resolve_execution_modes(
+    *,
+    requested_gui: bool,
+    requested_tui: bool,
+    requested_log: bool,
+    is_tty: bool,
+    is_frozen: bool,
+    gui_available: bool,
+) -> tuple[bool, bool, bool]:
+    """Return log, TUI, and GUI mode flags for the current launch context."""
+    run_in_log_mode = requested_log or (
+        not is_tty
+        and not requested_gui
+        and not requested_tui
+        and not is_frozen
+    )
+    run_in_tui_mode = requested_tui
+    run_in_gui_mode = requested_gui or (
+        not run_in_log_mode
+        and not run_in_tui_mode
+        and gui_available
+    )
+    return run_in_log_mode, run_in_tui_mode, run_in_gui_mode
+
+
+def _application_log_path(
+    *,
+    is_frozen: bool,
+    system: str,
+    home: Path,
+    local_app_data: str | None,
+) -> Path:
+    """Return a writable log path for development or packaged execution."""
+    if not is_frozen:
+        return Path("pc_diagnostic.log")
+    if system == "Darwin":
+        return home / "Library" / "Logs" / "PC Diagnostic" / "pc_diagnostic.log"
+    if system == "Windows":
+        base = Path(local_app_data) if local_app_data else home / "AppData" / "Local"
+        return base / "PC Diagnostic" / "Logs" / "pc_diagnostic.log"
+    return home / ".local" / "state" / "pc-diagnostic" / "pc_diagnostic.log"
 
 
 def setup_logging(log_mode: bool) -> None:
@@ -37,10 +83,17 @@ def setup_logging(log_mode: bool) -> None:
         )
     else:
         # File-only logging for GUI/TUI dashboard mode to avoid display pollution
+        log_path = _application_log_path(
+            is_frozen=bool(getattr(sys, "frozen", False)),
+            system=platform.system(),
+            home=Path.home(),
+            local_app_data=os.environ.get("LOCALAPPDATA"),
+        )
+        log_path.parent.mkdir(parents=True, exist_ok=True)
         logging.basicConfig(
             level=logging.INFO,
             format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
-            filename="pc_diagnostic.log",
+            filename=log_path,
             filemode="a",
         )
 
@@ -86,10 +139,16 @@ def main() -> None:
 
     # Determine execution mode
     is_tty = sys.stdout.isatty()
-    run_in_log_mode = args.log or (not is_tty and not args.gui)
-    run_in_tui_mode = args.tui
-    run_in_gui_mode = args.gui or (
-        not run_in_log_mode and not run_in_tui_mode and PYSIDE6_AVAILABLE
+    is_frozen = bool(getattr(sys, "frozen", False))
+    run_in_log_mode, _run_in_tui_mode, run_in_gui_mode = (
+        _resolve_execution_modes(
+            requested_gui=args.gui,
+            requested_tui=args.tui,
+            requested_log=args.log,
+            is_tty=is_tty,
+            is_frozen=is_frozen,
+            gui_available=PYSIDE6_AVAILABLE,
+        )
     )
 
     setup_logging(run_in_log_mode)
