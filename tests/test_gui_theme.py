@@ -40,8 +40,6 @@ class TestThemeManager(unittest.TestCase):
             "QPushButton.nav_button",
             "QFrame.card",
             "QLabel.metric_value",
-            "QLabel.status_active",
-            "QLabel.status_stale",
             "QProgressBar",
             "QScrollBar:vertical",
         ]

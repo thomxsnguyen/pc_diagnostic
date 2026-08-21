@@ -35,13 +35,6 @@ class TestGuiApp(unittest.TestCase):
         window._switch_view(2)
         self.assertEqual(window.stack.currentIndex(), 2)
 
-        # Test collector status updates
-        window._on_collector_status(True)
-        self.assertIn("ACTIVE", window.status_badge.text())
-
-        window._on_collector_status(False)
-        self.assertIn("STALE", window.status_badge.text())
-
         # Test cache health updates
         window._on_cache_health(
             CacheHealth(size=42, max_size=300, last_updated=100.0, age_s=0.5)

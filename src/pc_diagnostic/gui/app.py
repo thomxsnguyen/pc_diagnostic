@@ -140,11 +140,6 @@ class MainWindow(QMainWindow):
         status_layout.setContentsMargins(4, 3, 4, 3)
         status_layout.setSpacing(4)
 
-        # Collector Status Indicator Badge
-        self.status_badge = QLabel("ACTIVE")
-        self.status_badge.setProperty("class", "status_active")
-        status_layout.addWidget(self.status_badge)
-
         # Cache Health Fill Indicator
         self.cache_badge = QLabel("Cache: 0/300")
         self.cache_badge.setObjectName("cache_badge")
@@ -205,7 +200,6 @@ class MainWindow(QMainWindow):
 
     def _connect_signals(self) -> None:
         """Connect TelemetryBridge signals to header indicators."""
-        self.bridge.collector_status_changed.connect(self._on_collector_status)
         self.bridge.cache_health_changed.connect(self._on_cache_health)
         self.bridge.active_alerts_count_changed.connect(self._on_alerts_count)
 
@@ -225,17 +219,6 @@ class MainWindow(QMainWindow):
             self.alert_badge.setProperty("active", False)
         self.alert_badge.style().unpolish(self.alert_badge)
         self.alert_badge.style().polish(self.alert_badge)
-
-    def _on_collector_status(self, is_healthy: bool) -> None:
-        """Update the header collector status badge."""
-        if is_healthy:
-            self.status_badge.setText("ACTIVE")
-            self.status_badge.setProperty("class", "status_active")
-        else:
-            self.status_badge.setText("STALE")
-            self.status_badge.setProperty("class", "status_stale")
-        self.status_badge.style().unpolish(self.status_badge)
-        self.status_badge.style().polish(self.status_badge)
 
     def _on_cache_health(self, health: CacheHealth) -> None:
         """Update cache capacity and fill metrics in header."""

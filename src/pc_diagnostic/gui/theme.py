@@ -219,26 +219,6 @@ class ThemeManager:
         }}
 
         /* --- Status Indicators & Badges --- */
-        QLabel.status_active {{
-            background-color: transparent;
-            color: {t.status_normal};
-            border: none;
-            padding: 3px 9px;
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-        }}
-
-        QLabel.status_stale {{
-            background-color: transparent;
-            color: {t.status_critical};
-            border: none;
-            padding: 3px 9px;
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-        }}
-
         QLabel.alert_badge {{
             background-color: transparent;
             color: {t.text_muted};
