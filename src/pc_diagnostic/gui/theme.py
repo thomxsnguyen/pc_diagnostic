@@ -191,7 +191,7 @@ class ThemeManager:
         QFrame.card {{
             background-color: {t.bg_card};
             border: 1px solid {t.border_card};
-            border-radius: 6px;
+            border-radius: 2px;
             padding: 16px;
         }}
 
@@ -380,13 +380,13 @@ class ThemeManager:
         #recommendation_panel {{
             background-color: {t.bg_input};
             border: 1px solid {t.border_subtle};
-            border-radius: 4px;
+            border-radius: 2px;
         }}
 
         QTreeWidget#evidence_tree, QTextBrowser#report_view {{
             background-color: {t.bg_input};
             border: 1px solid {t.border_subtle};
-            border-radius: 4px;
+            border-radius: 2px;
             padding: 4px;
         }}
 
@@ -416,7 +416,7 @@ class ThemeManager:
         QWidget#overview_root QFrame.card {{
             background-color: {t.bg_card};
             border: 1px solid {t.border_card};
-            border-radius: 6px;
+            border-radius: 2px;
             padding: 0;
         }}
 
@@ -436,12 +436,6 @@ class ThemeManager:
         #overview_meta_secondary {{
             color: {t.text_secondary};
             font-size: 11px;
-        }}
-
-        #overview_header_divider {{
-            color: {t.border_subtle};
-            background-color: {t.border_subtle};
-            max-width: 1px;
         }}
 
         #overview_group_title {{
@@ -529,11 +523,6 @@ class ThemeManager:
             border-color: {t.border_accent};
         }}
 
-        QPushButton#process_pause[paused="true"] {{
-            color: {t.status_warning};
-            border-color: {t.status_warning};
-        }}
-
         /* --- Sensors --- */
         QScrollArea#sensors_scroll {{
             background-color: transparent;
@@ -617,7 +606,7 @@ class ThemeManager:
         QFrame#alert_control_panel {{
             background-color: {t.bg_input};
             border: 1px solid {t.border_subtle};
-            border-radius: 5px;
+            border-radius: 2px;
         }}
 
         #alert_control_title {{
@@ -674,26 +663,20 @@ class ThemeManager:
         /* --- Settings --- */
         #settings_page_title, #settings_page_subtitle,
         #settings_section_title, #settings_section_subtitle,
-        #settings_field_label, #settings_security_note,
-        #ai_credential_status {{
+        #settings_field_label, #ai_credential_status {{
             background-color: transparent;
         }}
 
         QFrame#ai_credential_panel {{
             background-color: {t.bg_input};
             border: 1px solid {t.border_subtle};
-            border-radius: 5px;
+            border-radius: 2px;
         }}
 
         #settings_field_label {{
             color: {t.text_primary};
             font-size: 12px;
             font-weight: 600;
-        }}
-
-        #settings_security_note {{
-            color: {t.text_muted};
-            font-size: 10px;
         }}
 
         #ai_credential_status {{

@@ -116,20 +116,6 @@ class SettingsView(BaseView):
         layout.setContentsMargins(24, 20, 24, 24)
         layout.setSpacing(16)
 
-        header = QFrame(self)
-        header.setProperty("class", "card")
-        header_layout = QVBoxLayout(header)
-        header_layout.setContentsMargins(18, 14, 18, 14)
-        header_layout.setSpacing(4)
-
-        title = QLabel("Settings")
-        title.setObjectName("settings_page_title")
-        subtitle = QLabel("Application preferences and secure integrations")
-        subtitle.setObjectName("settings_page_subtitle")
-        header_layout.addWidget(title)
-        header_layout.addWidget(subtitle)
-        layout.addWidget(header)
-
         card = QFrame(self)
         card.setProperty("class", "card")
         card_layout = QVBoxLayout(card)
@@ -194,14 +180,6 @@ class SettingsView(BaseView):
         self.token_input.setPlaceholderText("Enter a provider token")
         self.token_input.setClearButtonEnabled(True)
         panel_layout.addWidget(self.token_input)
-
-        security_note = QLabel(
-            "The token is stored in Keychain or Credential Locker and is never "
-            "written to application settings."
-        )
-        security_note.setObjectName("settings_security_note")
-        security_note.setWordWrap(True)
-        panel_layout.addWidget(security_note)
 
         actions = QHBoxLayout()
         actions.setSpacing(8)

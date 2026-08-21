@@ -68,26 +68,11 @@ class AlertsView(QWidget):
         main_layout.setContentsMargins(24, 20, 24, 24)
         main_layout.setSpacing(16)
 
-        # 1. Page header
-        header = QFrame(container)
-        header.setProperty("class", "card")
-        header_layout = QVBoxLayout(header)
-        header_layout.setContentsMargins(18, 14, 18, 14)
-        header_layout.setSpacing(4)
-
-        title = QLabel("Alerts")
-        title.setObjectName("alerts_page_title")
-        subtitle = QLabel("Incident history and notification thresholds")
-        subtitle.setObjectName("alerts_page_subtitle")
-        header_layout.addWidget(title)
-        header_layout.addWidget(subtitle)
-        main_layout.addWidget(header)
-
-        # 2. Active incidents
+        # Active incidents
         incidents_card = self._build_incidents_card()
         main_layout.addWidget(incidents_card, stretch=1)
 
-        # 3. Alert thresholds
+        # Alert thresholds
         config_card = self._build_config_card()
         main_layout.addWidget(config_card)
 

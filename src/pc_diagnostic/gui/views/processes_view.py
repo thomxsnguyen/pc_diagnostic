@@ -15,12 +15,11 @@ if TYPE_CHECKING:
     from pc_diagnostic.models import Snapshot
 
 try:
-    from PySide6.QtCore import Qt, QTimer
+    from PySide6.QtCore import QTimer
     from PySide6.QtWidgets import (
         QFrame,
         QHBoxLayout,
         QLabel,
-        QPushButton,
         QVBoxLayout,
         QWidget,
     )
@@ -43,7 +42,6 @@ class ProcessesView(QWidget):
         if PYSIDE6_AVAILABLE:
             super().__init__(parent)
         self.bridge = bridge
-        self._is_paused = False
         self._init_ui()
 
         # Connect to TelemetryBridge signals
@@ -63,22 +61,12 @@ class ProcessesView(QWidget):
         layout.setContentsMargins(24, 20, 24, 24)
         layout.setSpacing(16)
 
-        # 1. Page status header
+        # 1. Compact process controls
         banner_card = QFrame(self)
         banner_card.setProperty("class", "card")
         banner_layout = QHBoxLayout(banner_card)
-        banner_layout.setContentsMargins(18, 14, 18, 14)
+        banner_layout.setContentsMargins(14, 10, 14, 10)
         banner_layout.setSpacing(18)
-
-        vbox_left = QVBoxLayout()
-        vbox_left.setSpacing(4)
-        title = QLabel("Processes")
-        title.setObjectName("process_page_title")
-        self.lbl_summary = QLabel("Live process activity and resource usage")
-        self.lbl_summary.setObjectName("process_page_subtitle")
-        vbox_left.addWidget(title)
-        vbox_left.addWidget(self.lbl_summary)
-        banner_layout.addLayout(vbox_left, stretch=1)
 
         cpu_column = QVBoxLayout()
         cpu_column.setSpacing(3)
@@ -101,14 +89,7 @@ class ProcessesView(QWidget):
         memory_column.addWidget(memory_caption)
         memory_column.addWidget(self.lbl_top_mem)
         banner_layout.addLayout(memory_column)
-
-        self.btn_pause = QPushButton("Pause")
-        self.btn_pause.setObjectName("process_pause")
-        self.btn_pause.setProperty("class", "secondary_btn")
-        self.btn_pause.setProperty("paused", False)
-        self.btn_pause.setMinimumWidth(92)
-        self.btn_pause.clicked.connect(self._toggle_pause)
-        banner_layout.addWidget(self.btn_pause, alignment=Qt.AlignmentFlag.AlignRight)
+        banner_layout.addStretch()
 
         layout.addWidget(banner_card)
 
@@ -129,17 +110,6 @@ class ProcessesView(QWidget):
         self.process_table = ProcessTableWidget(table_card)
         table_layout.addWidget(self.process_table, stretch=1)
         layout.addWidget(table_card, stretch=1)
-
-    def _toggle_pause(self) -> None:
-        """Toggle live process table updating."""
-        self._is_paused = not self._is_paused
-        if self._is_paused:
-            self.btn_pause.setText("Resume")
-        else:
-            self.btn_pause.setText("Pause")
-        self.btn_pause.setProperty("paused", self._is_paused)
-        self.btn_pause.style().unpolish(self.btn_pause)
-        self.btn_pause.style().polish(self.btn_pause)
 
     def _on_snapshot(self, snapshot: Snapshot) -> None:
         """Extract top CPU and RAM processes from latest snapshot."""
@@ -170,7 +140,7 @@ class ProcessesView(QWidget):
 
     def _refresh_process_list(self) -> None:
         """Scan running system processes using psutil and feed to ProcessTableWidget."""
-        if not PYSIDE6_AVAILABLE or self._is_paused or psutil is None:
+        if not PYSIDE6_AVAILABLE or psutil is None:
             return
 
         try:

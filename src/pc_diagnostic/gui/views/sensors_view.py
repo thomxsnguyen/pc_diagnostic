@@ -15,9 +15,7 @@ if TYPE_CHECKING:
 try:
     from PySide6.QtCore import Qt
     from PySide6.QtWidgets import (
-        QFrame,
         QHBoxLayout,
-        QLabel,
         QScrollArea,
         QVBoxLayout,
         QWidget,
@@ -59,22 +57,7 @@ class SensorsView(QWidget):
         main_vbox.setContentsMargins(24, 20, 24, 24)
         main_vbox.setSpacing(16)
 
-        # 1. Page header
-        header = QFrame(container)
-        header.setProperty("class", "card")
-        header_layout = QVBoxLayout(header)
-        header_layout.setContentsMargins(18, 14, 18, 14)
-        header_layout.setSpacing(4)
-
-        title = QLabel("Sensors")
-        title.setObjectName("sensors_page_title")
-        subtitle = QLabel("Live hardware, thermal, cooling, and power telemetry")
-        subtitle.setObjectName("sensors_page_subtitle")
-        header_layout.addWidget(title)
-        header_layout.addWidget(subtitle)
-        main_vbox.addWidget(header)
-
-        # 2. Sensor workspace
+        # Sensor workspace
         columns_layout = QHBoxLayout()
         columns_layout.setSpacing(16)
 

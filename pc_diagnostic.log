@@ -312,3 +312,9 @@
 2026-08-21 11:00:47,541 [INFO] pc_diagnostic: Registered providers: ['psutil', 'smc']
 2026-08-21 11:00:47,543 [INFO] pc_diagnostic.collector: Collector thread started.
 2026-08-21 11:01:38,037 [WARNING] pc_diagnostic.providers.smc_provider: Failed to read macOS SMC helper: Command '['/var/folders/_m/82pn5dv13mbg6s8pmr9sg6qm0000gn/T/_MEI2sZKJL/pc_diagnostic/providers/smc_helper']' died with <Signals.SIGINT: 2>.
+2026-08-21 11:35:53,334 [INFO] pc_diagnostic.collector: Stopping collector thread...
+2026-08-21 11:35:53,334 [INFO] pc_diagnostic.collector: Collector thread stopped.
+2026-08-21 11:35:53,334 [INFO] pc_diagnostic: PC Diagnostic stopped.
+2026-08-21 11:35:55,838 [INFO] pc_diagnostic: Initializing PC Diagnostic...
+2026-08-21 11:35:55,842 [INFO] pc_diagnostic: Registered providers: ['psutil', 'smc']
+2026-08-21 11:35:55,844 [INFO] pc_diagnostic.collector: Collector thread started.

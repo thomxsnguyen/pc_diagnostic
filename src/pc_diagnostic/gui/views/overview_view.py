@@ -108,7 +108,7 @@ class OverviewView(QWidget):
         self.content_layout.setContentsMargins(24, 20, 24, 24)
         self.content_layout.setSpacing(16)
 
-        # 1. Top System Info Banner Card
+        # 1. Compact system metadata
         self.header_card = self._build_header_card()
         self.content_layout.addWidget(self.header_card)
 
@@ -138,28 +138,13 @@ class OverviewView(QWidget):
         main_layout.addWidget(self.scroll_area)
 
     def _build_header_card(self) -> QFrame:
-        """Create the top system overview metadata badge."""
+        """Create the compact system metadata strip."""
         card = QFrame(self)
         card.setProperty("class", "card")
         card.setObjectName("overview_header")
         card_layout = QHBoxLayout(card)
-        card_layout.setContentsMargins(18, 14, 18, 14)
+        card_layout.setContentsMargins(16, 10, 16, 10)
         card_layout.setSpacing(18)
-
-        page_column = QVBoxLayout()
-        page_column.setSpacing(4)
-        page_title = QLabel("Overview")
-        page_title.setObjectName("overview_page_title")
-        page_subtitle = QLabel("Live system health and resource activity")
-        page_subtitle.setObjectName("overview_page_subtitle")
-        page_column.addWidget(page_title)
-        page_column.addWidget(page_subtitle)
-        card_layout.addLayout(page_column, stretch=2)
-
-        divider = QFrame(card)
-        divider.setObjectName("overview_header_divider")
-        divider.setFrameShape(QFrame.Shape.VLine)
-        card_layout.addWidget(divider)
 
         # OS & Host
         col1 = QVBoxLayout()
@@ -187,7 +172,7 @@ class OverviewView(QWidget):
         col2.addWidget(self.lbl_uptime)
         col2.addWidget(self.lbl_mem_total)
 
-        card_layout.addLayout(col1, stretch=2)
+        card_layout.addLayout(col1, stretch=1)
         card_layout.addLayout(col2, stretch=1)
         return card
 

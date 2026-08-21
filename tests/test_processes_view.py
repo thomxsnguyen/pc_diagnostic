@@ -66,7 +66,7 @@ class TestProcessesView(unittest.TestCase):
             widget._on_search_changed("")
             self.assertEqual(widget.lbl_process_count.text(), "3 Processes")
 
-    def test_processes_view_snapshot_and_pause(self) -> None:
+    def test_processes_view_snapshot(self) -> None:
         view = ProcessesView(self.bridge)
 
         readings = [
@@ -97,15 +97,6 @@ class TestProcessesView(unittest.TestCase):
             self.assertIn("blender", view.lbl_top_cpu.text())
             self.assertIn("78.5%", view.lbl_top_cpu.text())
             self.assertIn("docker", view.lbl_top_mem.text())
-
-            # Test toggle pause
-            self.assertFalse(view._is_paused)
-            view._toggle_pause()
-            self.assertTrue(view._is_paused)
-            self.assertEqual(view.btn_pause.text(), "Resume")
-            view._toggle_pause()
-            self.assertFalse(view._is_paused)
-
 
 if __name__ == "__main__":
     unittest.main()
