@@ -12,6 +12,12 @@ from pc_diagnostic.models import MetricReading, MetricUnit, Snapshot
 
 
 class TestGuiComponents(unittest.TestCase):
+    def setUp(self) -> None:
+        if PYSIDE6_AVAILABLE:
+            from PySide6.QtWidgets import QApplication
+
+            self.app = QApplication.instance() or QApplication([])
+
     def test_radial_gauge_values_and_clamping(self) -> None:
         gauge = RadialGaugeWidget(title="CPU Load", unit="%", min_val=0, max_val=100)
         self.assertEqual(gauge.title, "CPU Load")
@@ -59,8 +65,14 @@ class TestGuiComponents(unittest.TestCase):
                 source="test",
             ),
             MetricReading(
-                metric="disk.read_bytes_per_sec",
+                metric="disk.io.read_bytes",
                 value=10 * 1024 * 1024,
+                unit=MetricUnit.BYTES_PER_SEC,
+                source="test",
+            ),
+            MetricReading(
+                metric="network.io.bytes_recv",
+                value=2 * 1024 * 1024,
                 unit=MetricUnit.BYTES_PER_SEC,
                 source="test",
             ),
@@ -72,8 +84,63 @@ class TestGuiComponents(unittest.TestCase):
         self.assertEqual(chart._series["cpu.utilization.total"]["values"][0], 30.0)
         self.assertEqual(chart._series["memory.utilization"]["values"][0], 60.0)
         self.assertEqual(
-            chart._series["disk.read_bytes_per_sec"]["values"][0], 10.0
+            chart._series["disk.io.read_bytes"]["values"][0], 10.0
         )  # Converted to MB/s
+        self.assertEqual(
+            chart._series["network.io.bytes_recv"]["values"][0], 2.0
+        )
+
+    def test_timeseries_chart_aggregates_throughput_per_snapshot(self) -> None:
+        chart = TimeSeriesChart(maxlen=60)
+        readings = [
+            MetricReading(
+                metric="disk.io.read_bytes",
+                value=3 * 1024 * 1024,
+                unit=MetricUnit.BYTES_PER_SEC,
+                source="test",
+                tags={"device": "disk0"},
+            ),
+            MetricReading(
+                metric="disk.io.read_bytes",
+                value=2 * 1024 * 1024,
+                unit=MetricUnit.BYTES_PER_SEC,
+                source="test",
+                tags={"device": "disk1"},
+            ),
+            MetricReading(
+                metric="network.io.bytes_recv",
+                value=512 * 1024,
+                unit=MetricUnit.BYTES_PER_SEC,
+                source="test",
+                tags={"interface": "en0"},
+            ),
+            MetricReading(
+                metric="network.io.bytes_recv",
+                value=512 * 1024,
+                unit=MetricUnit.BYTES_PER_SEC,
+                source="test",
+                tags={"interface": "en1"},
+            ),
+        ]
+
+        chart.update_from_snapshot(Snapshot(timestamp=time.time(), readings=readings))
+
+        self.assertEqual(list(chart._series["disk.io.read_bytes"]["values"]), [5.0])
+        self.assertEqual(
+            list(chart._series["network.io.bytes_recv"]["values"]), [1.0]
+        )
+        self.assertEqual(chart._throughput_scale(), 5.75)
+
+    def test_timeseries_chart_keeps_legacy_throughput_aliases(self) -> None:
+        chart = TimeSeriesChart(maxlen=60)
+
+        chart.add_point("disk.read_bytes_per_sec", 1024 * 1024)
+        chart.add_point("network.rx_bytes_per_sec", 2 * 1024 * 1024)
+
+        self.assertEqual(list(chart._series["disk.io.read_bytes"]["values"]), [1.0])
+        self.assertEqual(
+            list(chart._series["network.io.bytes_recv"]["values"]), [2.0]
+        )
 
     def test_storage_network_card_update(self) -> None:
         card = StorageNetworkCard()

@@ -1,10 +1,7 @@
 from __future__ import annotations
 
 from collections import deque
-from typing import TYPE_CHECKING, Any
-
-if TYPE_CHECKING:
-    pass
+from typing import Any, ClassVar
 
 try:
     from PySide6.QtCore import QPointF, QRectF, Qt
@@ -19,6 +16,15 @@ except ImportError:
 
 class TimeSeriesChart(QWidget):
     """Hardware-accelerated 60-second real-time multi-line telemetry chart."""
+
+    _THROUGHPUT_METRICS: ClassVar[tuple[str, str]] = (
+        "disk.io.read_bytes",
+        "network.io.bytes_recv",
+    )
+    _METRIC_ALIASES: ClassVar[dict[str, str]] = {
+        "disk.read_bytes_per_sec": "disk.io.read_bytes",
+        "network.rx_bytes_per_sec": "network.io.bytes_recv",
+    }
 
     def __init__(
         self,
@@ -47,19 +53,17 @@ class TimeSeriesChart(QWidget):
                 "visible": True,
                 "max_scale": 100.0,
             },
-            "disk.read_bytes_per_sec": {
+            "disk.io.read_bytes": {
                 "label": "Disk Read (MB/s)",
                 "color": QColor("#00E676") if PYSIDE6_AVAILABLE else None,
                 "values": deque(maxlen=maxlen),
                 "visible": True,
-                "max_scale": 100.0,
             },
-            "network.rx_bytes_per_sec": {
+            "network.io.bytes_recv": {
                 "label": "Net Down (MB/s)",
                 "color": QColor("#FFD600") if PYSIDE6_AVAILABLE else None,
                 "values": deque(maxlen=maxlen),
                 "visible": True,
-                "max_scale": 50.0,
             },
         }
 
@@ -70,9 +74,9 @@ class TimeSeriesChart(QWidget):
 
     def add_point(self, metric: str, value: float) -> None:
         """Append a data point to a specific series buffer."""
+        metric = self._METRIC_ALIASES.get(metric, metric)
         if metric in self._series:
-            # Scale disk/net bytes to MB/s if needed
-            if "bytes_per_sec" in metric:
+            if metric in self._THROUGHPUT_METRICS:
                 value = value / (1024.0 * 1024.0)
             self._series[metric]["values"].append(value)
 
@@ -81,24 +85,55 @@ class TimeSeriesChart(QWidget):
         if snapshot is None or not hasattr(snapshot, "readings"):
             return
 
-        for r in snapshot.readings:
-            if r.metric in self._series:
-                self.add_point(r.metric, r.value)
+        canonical: dict[str, list[float]] = {
+            metric: [] for metric in self._series
+        }
+        legacy: dict[str, list[float]] = {
+            metric: [] for metric in self._series
+        }
+        for reading in snapshot.readings:
+            metric = self._METRIC_ALIASES.get(reading.metric, reading.metric)
+            if metric not in self._series:
+                continue
+            target = legacy if reading.metric in self._METRIC_ALIASES else canonical
+            target[metric].append(float(reading.value))
+
+        for metric in self._series:
+            values = canonical[metric] or legacy[metric]
+            if metric in self._THROUGHPUT_METRICS:
+                self.add_point(metric, sum(values))
+            elif values:
+                self.add_point(metric, values[-1])
 
         if PYSIDE6_AVAILABLE and hasattr(self, "update"):
             self.update()
 
     def set_series_visibility(self, metric: str, visible: bool) -> None:
         """Toggle visibility for a specific metric line."""
+        metric = self._METRIC_ALIASES.get(metric, metric)
         if metric in self._series:
             self._series[metric]["visible"] = visible
             if PYSIDE6_AVAILABLE and hasattr(self, "update"):
                 self.update()
 
+    def _throughput_scale(self) -> float:
+        """Return one readable MB/s scale shared by disk and network series."""
+        peak = max(
+            (
+                max(self._series[metric]["values"], default=0.0)
+                for metric in self._THROUGHPUT_METRICS
+            ),
+            default=0.0,
+        )
+        return max(1.0, peak * 1.15)
+
     def paintEvent(self, event: Any) -> None:  # noqa: N802
         if not PYSIDE6_AVAILABLE:
             return
 
+        assert self._color_bg is not None
+        assert self._color_grid is not None
+        assert self._color_text is not None
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing, True)
         painter.setRenderHint(QPainter.RenderHint.TextAntialiasing, True)
@@ -106,7 +141,7 @@ class TimeSeriesChart(QWidget):
         width = float(self.width())
         height = float(self.height())
         padding_left = 40.0
-        padding_right = 16.0
+        padding_right = 58.0
         padding_top = 28.0
         padding_bottom = 26.0
 
@@ -123,13 +158,14 @@ class TimeSeriesChart(QWidget):
             self._color_bg,
         )
 
-        # 2. Draw Grid Lines (Horizontal 0%, 25%, 50%, 75%, 100%)
+        # 2. Draw Grid Lines with percent and throughput axes.
         grid_pen = QPen(self._color_grid, 1.0, Qt.PenStyle.DashLine)
         painter.setPen(grid_pen)
         font = QFont(self.font())
         font.setPointSize(9)
         painter.setFont(font)
 
+        throughput_scale = self._throughput_scale()
         for step in [0.0, 0.25, 0.5, 0.75, 1.0]:
             y = padding_top + plot_h - (plot_h * step)
             painter.drawLine(
@@ -143,7 +179,24 @@ class TimeSeriesChart(QWidget):
                 Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter,
                 f"{int(step * 100)}%",
             )
+            painter.drawText(
+                QRectF(padding_left + plot_w + 6, y - 7, padding_right - 8, 14),
+                Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
+                f"{throughput_scale * step:.1f}",
+            )
             painter.setPen(grid_pen)
+
+        painter.setPen(self._color_text)
+        painter.drawText(
+            QRectF(
+                padding_left + plot_w + 6,
+                padding_top - 21,
+                padding_right - 8,
+                14,
+            ),
+            Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
+            "MB/s",
+        )
 
         # 3. Draw X-axis time marks (-60s, -45s, -30s, -15s, Now)
         time_labels = [
@@ -163,7 +216,7 @@ class TimeSeriesChart(QWidget):
             )
 
         # 4. Draw Metric Lines
-        for _metric, info in self._series.items():
+        for metric, info in self._series.items():
             if not info["visible"]:
                 continue
 
@@ -188,8 +241,12 @@ class TimeSeriesChart(QWidget):
 
             for i, val in enumerate(values):
                 x = padding_left + start_x_offset + (float(i) * step_x)
-                # Normalize value (clamp 0..100)
-                norm = max(0.0, min(100.0, val)) / 100.0
+                max_scale = (
+                    throughput_scale
+                    if metric in self._THROUGHPUT_METRICS
+                    else info["max_scale"]
+                )
+                norm = max(0.0, min(max_scale, val)) / max_scale
                 y = padding_top + plot_h - (plot_h * norm)
 
                 if i == 0:
