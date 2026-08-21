@@ -367,7 +367,17 @@ class ThemeManager:
             background-color: {t.bg_input};
             border: 1px solid {t.border_subtle};
             border-radius: 2px;
-            padding: 4px;
+            padding: 10px;
+        }}
+
+        QTreeWidget#evidence_tree::item {{
+            min-height: 25px;
+            padding: 2px 4px;
+        }}
+
+        QTreeWidget#evidence_tree::item:selected {{
+            background-color: {t.bg_card_hover};
+            color: {t.text_primary};
         }}
 
         QProgressBar#studio_progress {{

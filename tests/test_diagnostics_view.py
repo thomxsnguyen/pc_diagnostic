@@ -70,6 +70,15 @@ def test_build_evidence_packet_uses_current_sensor_metrics() -> None:
     }
 
 
+def test_report_display_adds_section_dividers_without_changing_content() -> None:
+    report = "# Report\n\nSummary\n\n## Findings\n\n- Item"
+
+    display = DiagnosticsView._format_report_for_display(report)
+
+    assert "\n\n---\n\n## Findings" in display
+    assert "Summary" in display
+
+
 @pytest.mark.skipif(not PYSIDE6_AVAILABLE, reason="PySide6 is unavailable")
 def test_worker_emits_report_without_blocking(
     qtbot: Any, monkeypatch: pytest.MonkeyPatch

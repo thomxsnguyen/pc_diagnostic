@@ -5,6 +5,7 @@ import html
 import logging
 import re
 from collections.abc import Callable, Iterable
+from datetime import datetime
 from functools import partial
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
@@ -290,9 +291,9 @@ class DiagnosticsView(QWidget):
         self.evidence_tree.setIndentation(16)
         self.evidence_tree.setUniformRowHeights(True)
         evidence_header = self.evidence_tree.header()
-        evidence_header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
-        evidence_header.setSectionResizeMode(1, QHeaderView.ResizeMode.Interactive)
-        evidence_header.resizeSection(1, 120)
+        evidence_header.setSectionResizeMode(0, QHeaderView.ResizeMode.Interactive)
+        evidence_header.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
+        evidence_header.resizeSection(0, 190)
         evidence_layout.addWidget(self.evidence_tree)
 
         report_card = QFrame(splitter)
@@ -335,6 +336,15 @@ class DiagnosticsView(QWidget):
         self.report_view = QTextBrowser(report_card)
         self.report_view.setObjectName("report_view")
         self.report_view.setOpenExternalLinks(True)
+        self.report_view.document().setDocumentMargin(14.0)
+        self.report_view.document().setDefaultStyleSheet(
+            "h1 { font-size: 22px; font-weight: 700; margin: 0 0 14px 0; }"
+            "h2 { font-size: 16px; font-weight: 700; margin: 20px 0 8px 0; }"
+            "h3 { font-size: 13px; font-weight: 700; margin: 16px 0 6px 0; }"
+            "p { margin: 0 0 10px 0; line-height: 1.35; }"
+            "ul, ol { margin: 4px 0 14px 22px; }"
+            "li { margin-bottom: 6px; }"
+        )
         self.report_view.setPlaceholderText(
             "Run a diagnosis to generate hardware and software recommendations."
         )
@@ -358,9 +368,9 @@ class DiagnosticsView(QWidget):
 
         splitter.addWidget(evidence_card)
         splitter.addWidget(report_card)
-        splitter.setStretchFactor(0, 2)
-        splitter.setStretchFactor(1, 3)
-        splitter.setSizes([320, 600])
+        splitter.setStretchFactor(0, 1)
+        splitter.setStretchFactor(1, 2)
+        splitter.setSizes([360, 760])
         layout.addWidget(splitter, stretch=1)
 
     def start_diagnosis(self) -> None:
@@ -395,7 +405,7 @@ class DiagnosticsView(QWidget):
 
     def _on_diagnosis_finished(self, report: str) -> None:
         self._report_markdown = report
-        self.report_view.setMarkdown(report)
+        self.report_view.setMarkdown(self._format_report_for_display(report))
         self._style_health_badge(self._calculate_health_score(self._evidence))
         hardware, software = self._categorise_recommendations(report)
         hardware_text = "\n".join(f"• {item}" for item in hardware) or "• None"
@@ -411,6 +421,12 @@ class DiagnosticsView(QWidget):
         ):
             button.setEnabled(True)
         self.bridge.emit_diagnosis(report)
+
+    @staticmethod
+    def _format_report_for_display(report: str) -> str:
+        """Add visual separation without altering saved or copied report content."""
+        normalized = report.strip()
+        return re.sub(r"(?m)^##\s+", "\n\n---\n\n## ", normalized)
 
     def _on_worker_stopped(self) -> None:
         worker = self._worker
@@ -479,42 +495,133 @@ class DiagnosticsView(QWidget):
         )
 
     def _populate_evidence_tree(self, evidence: dict[str, Any]) -> None:
+        """Display diagnostic evidence with readable labels, units, and hierarchy."""
         self.evidence_tree.clear()
-        groups = {
-            "System & CPU": ("snapshot_timestamp", "cpu_model", "cpu_util"),
-            "Memory": ("ram_util", "ram_used_str"),
-            "Thermals & Cooling": (
-                "cpu_temp",
-                "gpu_temp",
-                "fan_speed",
-                "thermal_throttling_risk",
+        groups = (
+            (
+                "System & CPU",
+                (
+                    (
+                        "Captured",
+                        self._format_timestamp(evidence.get("snapshot_timestamp")),
+                    ),
+                    ("Processor", str(evidence.get("cpu_model", "Unknown"))),
+                    ("CPU utilization", self._format_percent(evidence.get("cpu_util"))),
+                ),
             ),
-            "Top CPU Processes": ("top_cpu_procs",),
-            "Top Memory Processes": ("top_mem_procs",),
-            "Active Incidents": ("active_incidents",),
-        }
-        for group_name, keys in groups.items():
+            (
+                "Memory",
+                (
+                    (
+                        "Memory utilization",
+                        self._format_percent(evidence.get("ram_util")),
+                    ),
+                    ("Memory used", str(evidence.get("ram_used_str", "Unavailable"))),
+                ),
+            ),
+            (
+                "Thermals & Cooling",
+                tuple(self._thermal_evidence_rows(evidence)),
+            ),
+        )
+        for group_name, rows in groups:
             parent = QTreeWidgetItem([group_name, ""])
             self.evidence_tree.addTopLevelItem(parent)
-            for key in keys:
-                self._append_tree_value(parent, key, evidence.get(key))
+            for label, value in rows:
+                QTreeWidgetItem(parent, [label, value])
             parent.setExpanded(True)
 
-    def _append_tree_value(
-        self, parent: QTreeWidgetItem, label: str, value: Any
+        self._append_process_group(
+            "Top CPU Processes", evidence.get("top_cpu_procs", []), primary="cpu"
+        )
+        self._append_process_group(
+            "Top Memory Processes", evidence.get("top_mem_procs", []), primary="memory"
+        )
+        self._append_incident_group(evidence.get("active_incidents", []))
+
+    @staticmethod
+    def _format_percent(value: Any) -> str:
+        try:
+            return f"{float(value):.1f}%"
+        except (TypeError, ValueError):
+            return "Unavailable"
+
+    @staticmethod
+    def _format_timestamp(value: Any) -> str:
+        try:
+            timestamp = datetime.fromtimestamp(float(value)).astimezone()
+        except (OSError, OverflowError, TypeError, ValueError):
+            return "Unavailable"
+        return timestamp.strftime("%b %d · %I:%M %p")
+
+    @staticmethod
+    def _thermal_evidence_rows(
+        evidence: dict[str, Any],
+    ) -> Iterable[tuple[str, str]]:
+        for key, label, unit in (
+            ("cpu_temp", "CPU temperature", "°C"),
+            ("gpu_temp", "GPU temperature", "°C"),
+            ("fan_speed", "Fan speed", "RPM"),
+        ):
+            try:
+                value = float(evidence.get(key, -1.0))
+            except (TypeError, ValueError):
+                continue
+            if value >= 0.0:
+                yield label, f"{value:.1f} {unit}"
+        yield (
+            "Thermal throttling risk",
+            "Detected" if evidence.get("thermal_throttling_risk") else "Not detected",
+        )
+
+    def _append_process_group(
+        self, title: str, processes: Any, *, primary: str
     ) -> None:
-        if isinstance(value, dict):
-            item = QTreeWidgetItem(parent, [label, ""])
-            for child_label, child_value in value.items():
-                self._append_tree_value(item, str(child_label), child_value)
-            item.setExpanded(True)
-        elif isinstance(value, list):
-            item = QTreeWidgetItem(parent, [label, f"{len(value)} item(s)"])
-            for index, child_value in enumerate(value, start=1):
-                self._append_tree_value(item, str(index), child_value)
-            item.setExpanded(True)
-        else:
-            QTreeWidgetItem(parent, [label.replace("_", " ").title(), str(value)])
+        process_list = processes if isinstance(processes, list) else []
+        parent = QTreeWidgetItem([title, f"{len(process_list)} captured"])
+        self.evidence_tree.addTopLevelItem(parent)
+        for index, process in enumerate(process_list, start=1):
+            if not isinstance(process, dict):
+                continue
+            name = str(process.get("name", "Unknown"))
+            pid = str(process.get("pid", "—"))
+            cpu = self._format_percent(process.get("cpu", 0.0))
+            memory = process.get("mem_str")
+            if memory is None:
+                try:
+                    memory = _format_bytes(float(process.get("mem", 0.0)))
+                except (TypeError, ValueError):
+                    memory = "Unavailable"
+            detail = (
+                f"{cpu} CPU · {memory} · PID {pid}"
+                if primary == "cpu"
+                else f"{memory} · {cpu} CPU · PID {pid}"
+            )
+            item = QTreeWidgetItem(parent, [f"{index}. {name}", detail])
+            item.setToolTip(0, name)
+            item.setToolTip(1, detail)
+        parent.setExpanded(bool(process_list))
+
+    def _append_incident_group(self, incidents: Any) -> None:
+        incident_list = incidents if isinstance(incidents, list) else []
+        parent = QTreeWidgetItem(
+            ["Active Incidents", f"{len(incident_list)} active"]
+        )
+        self.evidence_tree.addTopLevelItem(parent)
+        for incident in incident_list:
+            if not isinstance(incident, dict):
+                continue
+            rule_id = str(incident.get("rule_id", "Unknown rule"))
+            state = str(incident.get("state", "Unknown")).title()
+            value = incident.get("value")
+            detail = state
+            if isinstance(value, int | float):
+                detail = f"{state} · Trigger value {value:.1f}"
+            item = QTreeWidgetItem(
+                parent, [rule_id.replace("_", " ").title(), detail]
+            )
+            item.setToolTip(1, detail)
+        parent.setExpanded(bool(incident_list))
 
     def _choose_path(self, caption: str, suffix: str, file_filter: str) -> str:
         path, _ = QFileDialog.getSaveFileName(
