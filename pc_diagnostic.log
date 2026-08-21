@@ -327,3 +327,10 @@
 2026-08-21 11:39:48,342 [INFO] pc_diagnostic.collector: Stopping collector thread...
 2026-08-21 11:39:48,342 [INFO] pc_diagnostic.collector: Collector thread stopped.
 2026-08-21 11:39:48,342 [INFO] pc_diagnostic: PC Diagnostic stopped.
+2026-08-21 12:31:32,946 [INFO] pc_diagnostic: Initializing PC Diagnostic...
+2026-08-21 12:31:32,951 [INFO] pc_diagnostic: Registered providers: ['psutil', 'smc']
+2026-08-21 12:31:32,952 [INFO] pc_diagnostic.collector: Collector thread started.
+2026-08-21 13:00:30,579 [WARNING] pc_diagnostic.providers.psutil_provider: Failed to read process utilization from psutil: <built-in function proc_cmdline> returned a result with an exception set
+2026-08-21 13:45:58,972 [INFO] pc_diagnostic.collector: Stopping collector thread...
+2026-08-21 13:45:58,975 [INFO] pc_diagnostic.collector: Collector thread stopped.
+2026-08-21 13:45:58,975 [INFO] pc_diagnostic: PC Diagnostic stopped.
